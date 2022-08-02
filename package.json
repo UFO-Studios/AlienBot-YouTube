@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "dotenv": "^16.0.1",
     "yt-livechat": "^2.1.1"
   }
 }

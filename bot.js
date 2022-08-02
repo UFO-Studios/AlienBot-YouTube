@@ -1,5 +1,7 @@
 // Import the lib
 const { LiveChat } = require("yt-livechat");
+require('dotenv').config();
+
  
 // Let's do some config
 const config = {
