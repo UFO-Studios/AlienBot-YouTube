@@ -1,7 +1,5 @@
 // Import the lib
 const { LiveChat } = require("yt-livechat");
-// Or with TypeScript:
-// import LiveChat from "yt-livechat"
  
 // Let's do some config
 const config = {
