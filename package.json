@@ -1,5 +1,5 @@
 {
-  "name": "y  outube-mod-bot",
+  "name": "youtube-mod-bot",
   "dependencies": {
     "dotenv": "^16.0.1",
     "easy-db-json": "^1.1.2",
