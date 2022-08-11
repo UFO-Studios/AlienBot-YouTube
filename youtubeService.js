@@ -62,6 +62,7 @@ youtubeService.findChat = async () => {
     const latestChat = await data.items[0];
     liveChatId = latestChat.snippet.liveChatId;
     console.log(`live chat id found: ${liveChatId}`);
+    youtubeService.insertMessage("Hello everyone!");
   } catch (error) {
     console.log(error);
   }
@@ -83,7 +84,123 @@ youtubeService.insertMessage = async (messageText = "hello world") => {
   });
 };
 
-youtubeService.stopChatTracking = async () => {
+const bw = [
+  "titties",
+  "kys",
+  "turkroach",
+  "mongloid",
+  "orgies",
+  "orgy",
+  "niqpa",
+  "gigga",
+  "necrophiliac",
+  "necrophilia",
+  "corpsefucker",
+  "jewpedo",
+  "dyke",
+  "xxxvids",
+  "femboy",
+  "slave",
+  "brazzers",
+  "kike",
+  "jewnigger",
+  "jewfag",
+  "goy",
+  "goyim",
+  "coon",
+  "faggot",
+  "cunt",
+  "spic",
+  "tranny",
+  "fapping",
+  "subhuman",
+  "aryan",
+  "hitler",
+  "natsoc",
+  "beaner",
+  "sandnigger",
+  "nudes",
+  "dickhead",
+  "cocaine",
+  "pussy",
+  "fucktard",
+  "gaylord",
+  "libtard",
+  "cuck",
+  "cucklord",
+  "gaylors",
+  "orgasm",
+  "sex",
+  "cum",
+  "niggur",
+  "nignog",
+  "cumsickle",
+  "retard",
+  "threesome",
+  "foursome",
+  "cunt",
+  "condom",
+  "WetAssPussy",
+  "negro",
+  "negros",
+  "hore",
+  "whore",
+  "masturbating",
+  "fag",
+  "nigger",
+  "nigga",
+  "nibba",
+  "niga",
+  "n1gger",
+  "n1gga",
+  "cock",
+  "cum",
+  "vagina",
+  "hentai",
+  "penis",
+  "milf",
+  "porn",
+  "pornhub",
+  "pornhubpremium",
+  "dildo",
+  "rape",
+  "anal",
+  "clit",
+  "dick",
+  "pussy",
+  "orgy",
+  "gangbang",
+  "hcodes",
+  "fetish",
+  "pedo",
+  "pedophile",
+  "porno",
+  "pornos",
+  "pussys",
+  "pussies",
+  "pornography",
+  "pedophilia",
+  "pedophilliac",
+  "phonesex",
+  "dildos",
+  "fisting",
+  "doggystyle",
+];
+
+// TODO:
+youtubeService.startAutoMod = async () => {
+  const res = await youtube.liveChatMessages.list({
+    auth,
+    part: "snippet",
+    liveChatId,
+    pageToken: nextPage,
+  });
+
+  const { data } = res;
+  console.log(data);
+};
+
+youtubeService.stopTrackingChat = async () => {
   clearInterval(interval);
 };
 
@@ -102,10 +219,14 @@ const getChatMessages = async () => {
   console.log(`total messages: ${chatMessages.length}`);
 };
 
-youtubeService.startChatTracking = async () => {
+youtubeService.startTrackingChat = async () => {
   interval = setInterval(() => {
     getChatMessages();
   }, intervalTime);
+};
+
+youtubeService.startReadingChat = async () => {
+  setInterval(() => console.log(chatMessages), 3100);
 };
 
 const checkTokens = async () => {

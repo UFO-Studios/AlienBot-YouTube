@@ -7,26 +7,47 @@
 
 <body>
     <h1>Youtube mod bot</h1>
-    <a href="/auth">
-        <button>
-            auth
-        </button>
-    </a>
-    <a href="/findChat">
-        <button>
-            findChat
-        </button>
-    </a>
-    <a href="/startChatTracking">
-        <button>
-            startChatTracking
-        </button>
-    </a>
-    <a href="/insertMessage">
-        <button>
-            insertMessage
-        </button>
-    </a>
+    <ol>
+        <li>
+            <a href="/auth">
+                <button>/auth</button>
+            </a>
+        </li>
+        <li>
+            <a href="/callback">
+                <button>/callback</button>
+            </a>
+        </li>
+        <li>
+            <a href="/findChat">
+                <button>/findChat</button>
+            </a>
+        </li>
+        <li>
+            <a href="/startTrackingChat">
+                <button>/startTrackingChat</button>
+            </a>
+        </li>
+        <li>
+            <a href="/startReadingChat">
+                <button>/startReadingChat</button>
+            </a>
+        </li>
+        <!-- <li>
+            <a href="/insertMessage">
+                <button>/insertMessage</button>
+            </a>
+        </li> -->
+        <li>
+            <a href="/startAutoMod">
+                <button>/startAutoMod</button>
+            </a>
+        </li>
+    </ol>
+    <form action="/insertMessage">
+        <input type="text">
+        <button type="submit">send</button>
+    </form>
 </body>
 
 </html>
