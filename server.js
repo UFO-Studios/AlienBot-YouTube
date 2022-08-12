@@ -41,12 +41,6 @@ server.get("/startReadingChat", (req, res) => {
 
 server.get("/insertMessage", (req, res) => {
   let msg;
-  req.query.hasOwnProperty("msg")
-    ? (msg = req.query.msg)
-    : (msg = "hello world");
-  console.log(msg);
-  console.log(req.query);
-  console.log(req.query.hasOwnProperty("msg"));
   youtube.insertMessage(msg);
   res.redirect("/");
 });
