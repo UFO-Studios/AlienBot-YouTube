@@ -26,9 +26,7 @@ const auth = new OAuth2(clientId, clientSecret, redirectURI);
 
 auth.on("tokens", (tokens) => db.set("tokens", tokens));
 
-const youtubeService = {};
-
-youtubeService.getCode = (res) => {
+const getCode = (res) => {
   const authUrl = auth.generateAuthUrl({
     access_type: "offline",
     scope,
@@ -36,19 +34,19 @@ youtubeService.getCode = (res) => {
   res.redirect(authUrl);
 };
 
-youtubeService.auth = ({ tokens }) => {
+const setAuth = ({ tokens }) => {
   auth.setCredentials(tokens);
   console.log("successfully set credentials.");
   console.log(tokens);
   db.set("tokens", tokens);
 };
 
-youtubeService.getToken = async (code) => {
+const getToken = async (code) => {
   const credentials = await auth.getToken(code);
-  youtubeService.auth(credentials);
+  setAuth(credentials);
 };
 
-youtubeService.findChat = async () => {
+const findChat = async () => {
   try {
     const res = await youtube.liveBroadcasts.list({
       auth,
@@ -67,7 +65,7 @@ youtubeService.findChat = async () => {
   }
 };
 
-youtubeService.insertMessage = async (messageText = "hello world") => {
+const insertMessage = async (messageText = "hello world") => {
   await youtube.liveChatMessages.insert({
     auth,
     part: "snippet",
@@ -83,7 +81,7 @@ youtubeService.insertMessage = async (messageText = "hello world") => {
   });
 };
 
-youtubeService.stopChatTracking = async () => {
+const stopChatTracking = async () => {
   clearInterval(interval);
 };
 
@@ -102,7 +100,7 @@ const getChatMessages = async () => {
   console.log(`total messages: ${chatMessages.length}`);
 };
 
-youtubeService.startChatTracking = async () => {
+const startChatTracking = async () => {
   interval = setInterval(() => {
     getChatMessages();
   }, intervalTime);
@@ -120,4 +118,11 @@ const checkTokens = async () => {
 
 checkTokens();
 
-module.exports = youtubeService;
+module.exports = {
+  getCode,
+  insertMessage,
+  startChatTracking,
+  stopChatTracking,
+  findChat,
+  getToken,
+};
