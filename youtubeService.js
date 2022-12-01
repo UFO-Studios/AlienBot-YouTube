@@ -1,4 +1,4 @@
-require("dotenv").config();
+const config = require("./config.json");
 const { google } = require("googleapis");
 const db = require("easy-db-json");
 
@@ -7,8 +7,8 @@ db.setFile("./db.json");
 const youtube = google.youtube("v3");
 const OAuth2 = google.auth.OAuth2;
 
-const clientId = process.env.CLIENT_ID;
-const clientSecret = process.env.CLIENT_SECRET;
+const clientId = config.CLIENT_ID;
+const clientSecret = config.CLIENT_SECRET;
 const redirectURI = "http://localhost:3000/callback";
 const scope = [
   "https://www.googleapis.com/auth/youtube.readonly",
