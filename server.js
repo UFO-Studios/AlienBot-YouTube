@@ -30,8 +30,12 @@ server.get("/startChatTracking", (req, res) => {
 });
 
 server.get("/insertMessage", (req, res) => {
-  youtube.insertMessage();
+  youtube.insertMessage(
+    "hey there guys! welcome to my stream! hope you enjoy! 😊"
+  );
   res.redirect("/");
 });
 
-server.listen(3000, () => console.log("server listening on port 3000!"));
+server.listen(3000, () =>
+  console.log("server started on http://localhost:3000!")
+);

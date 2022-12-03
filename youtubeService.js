@@ -18,7 +18,7 @@ const scope = [
 
 let liveChatId;
 let nextPage;
-const intervalTime = 3000;
+const intervalTime = config.INTERVAL_TIME || 5000;
 let interval;
 const chatMessages = [];
 
@@ -57,7 +57,12 @@ const findChat = async () => {
 
     const { data } = res;
 
+    console.log(data);
+
     const latestChat = await data.items[0];
+
+    console.log(latestChat);
+    console.log(latestChat.snippet);
     liveChatId = latestChat.snippet.liveChatId;
     console.log(`live chat id found: ${liveChatId}`);
   } catch (error) {
@@ -65,11 +70,11 @@ const findChat = async () => {
   }
 };
 
-const insertMessage = async (messageText = "hello world") => {
+const insertMessage = async (messageText) => {
   await youtube.liveChatMessages.insert({
     auth,
     part: "snippet",
-    resource: {
+    requestBody: {
       snippet: {
         liveChatId,
         type: "textMessageEvent",
@@ -88,7 +93,7 @@ const stopChatTracking = async () => {
 const getChatMessages = async () => {
   const res = await youtube.liveChatMessages.list({
     auth,
-    part: "snippet",
+    part: ["snippet"],
     liveChatId,
     pageToken: nextPage,
   });
