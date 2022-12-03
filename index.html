@@ -72,7 +72,7 @@
                 Press only after pressing "findChat" button. Starts tracking chat messages.
             </p>
         </a>
-        <a href="/insertMessage" class="button">
+        <a class="button" id="insertButton">
             <button>
                 insertMessage
             </button>
@@ -82,5 +82,23 @@
         </a>
     </div>
 </body>
+
+<script>
+    document.getElementById("insertButton").addEventListener("click", (e) => {
+        e.preventDefault();
+        const msg = prompt("Type in the message you want to send.");
+
+        const confirm = prompt(`The message your sending is:\n${msg}\nconfirm?\n(yes/no)`)
+
+        if (confirm.startsWith("y")) {
+            console.log(`Message sent! Message content:\n${msg}`)
+
+            window.location.href = `http://localhost:3000/insertMessage?message=${msg}`;
+        } else {
+            alert("Message not sent.")
+        }
+
+    }) 
+</script>
 
 </html>

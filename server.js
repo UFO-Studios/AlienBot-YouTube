@@ -30,9 +30,7 @@ server.get("/startChatTracking", (req, res) => {
 });
 
 server.get("/insertMessage", (req, res) => {
-  youtube.insertMessage(
-    "hey there guys! welcome to my stream! hope you enjoy! 😊"
-  );
+  youtube.insertMessage(req.query.message);
   res.redirect("/");
 });
 

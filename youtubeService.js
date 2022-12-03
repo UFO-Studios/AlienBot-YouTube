@@ -57,12 +57,8 @@ const findChat = async () => {
 
     const { data } = res;
 
-    console.log(data);
-
     const latestChat = await data.items[0];
 
-    console.log(latestChat);
-    console.log(latestChat.snippet);
     liveChatId = latestChat.snippet.liveChatId;
     console.log(`live chat id found: ${liveChatId}`);
   } catch (error) {
@@ -106,6 +102,12 @@ const getChatMessages = async () => {
 };
 
 const startChatTracking = async () => {
+  if (!liveChatId) {
+    console.error(
+      'No live chat ID found. Please press the "findChat" button to get your live chat ID.'
+    );
+  }
+
   interval = setInterval(() => {
     getChatMessages();
   }, intervalTime);
