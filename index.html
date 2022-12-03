@@ -5,33 +5,100 @@
 
 <head>
     <title>youtube mod bot</title>
+    <!-- <link rel="stylesheet" href="style.css"> -->
+
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=Inter:wght@500&display=swap");
+
+        * {
+            font-family: "Inter", sans-serif;
+        }
+
+        a {
+            text-decoration: none;
+            color: black;
+        }
+
+        .name {
+            display: flex;
+            justify-content: center;
+            align-content: center;
+            width: 100%;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: center;
+            /* align-content: center; */
+            width: 100%;
+        }
+
+        .button {
+            display: block;
+            margin-left: 10px;
+            align-self: center;
+            justify-self: center;
+        }
+    </style>
 </head>
 
 <body>
-    <h1>Youtube mod bot</h1>
-    <a href="/auth">
-        <button>
-            auth
-        </button>
-    </a>
-    <a href="/findChat">
-        <button>
-            findChat
-        </button>
-    </a>
-    <a href="/startChatTracking">
-        <button class="button-29" role="button">
-            startChatTracking
-        </button>
-    </a>
-    <a href="/insertMessage">
-        <button>
-            insertMessage
-        </button>
-    </a>
+    <div class="name">
+        <h1>AlienBot-Youtube</h1>
+    </div>
+
+    <div class="buttons">
+        <a href="/auth" class="button">
+            <button>
+                auth
+            </button>
+            <p>
+                Connect your youtube account with the app. Select the one your going to go live with on youtube.
+            </p>
+        </a>
+        <a href="/findChat" class="button">
+            <button>
+                findChat
+            </button>
+            <p>
+                Press this button after going live. It finds your live stream's chat.
+            </p>
+        </a>
+        <a href="/startChatTracking" class="button">
+            <button>
+                startChatTracking
+            </button>
+            <p>
+                Press only after pressing "findChat" button. Starts tracking chat messages.
+            </p>
+        </a>
+        <a class="button" id="insertButton">
+            <button>
+                insertMessage
+            </button>
+            <p>
+                Press only after pressing "findChat" button. Inserts a message of your choice using your account.
+            </p>
+        </a>
+    </div>
 </body>
 
+<script>
+    document.getElementById("insertButton").addEventListener("click", (e) => {
+        e.preventDefault();
+        const msg = prompt("Type in the message you want to send.");
+
+        const confirm = prompt(`The message your sending is:\n${msg}\nconfirm?\n(yes/no)`)
+
+        if (confirm.startsWith("y")) {
+            console.log(`Message sent! Message content:\n${msg}`)
+
+            window.location.href = `http://localhost:3000/insertMessage?message=${msg}`;
+        } else {
+            alert("Message not sent.")
+        }
+
+    }) 
+</script>
+
 </html>
-
-
-

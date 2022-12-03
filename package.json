@@ -1,10 +1,12 @@
 {
-  "name": "youtube-mod-bot",
+  "name": "alienbot-youtube",
+  "description": "The youtube version of AlienBot.",
   "dependencies": {
-    "dotenv": "^16.0.1",
-    "easy-db-json": "^1.1.2",
+    "easy-db-json": "^1.1.4",
     "express": "^4.18.1",
-    "googleapis": "^105.0.0",
-    "mongoose": "^6.7.2"
+    "googleapis": "^105.0.0"
+  },
+  "scripts": {
+    "start": "node server.js"
   }
 }

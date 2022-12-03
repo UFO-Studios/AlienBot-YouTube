@@ -1,4 +1,4 @@
-require("dotenv").config();
+const config = require("./config.json");
 const { google } = require("googleapis");
 const db = require("easy-db-json");
 
@@ -7,8 +7,8 @@ db.setFile("./db.json");
 const youtube = google.youtube("v3");
 const OAuth2 = google.auth.OAuth2;
 
-const clientId = process.env.CLIENT_ID;
-const clientSecret = process.env.CLIENT_SECRET;
+const clientId = config.CLIENT_ID;
+const clientSecret = config.CLIENT_SECRET;
 const redirectURI = "http://localhost:3000/callback";
 const scope = [
   "https://www.googleapis.com/auth/youtube.readonly",
@@ -18,7 +18,7 @@ const scope = [
 
 let liveChatId;
 let nextPage;
-const intervalTime = 3000;
+const intervalTime = config.INTERVAL_TIME || 5000;
 let interval;
 const chatMessages = [];
 
@@ -26,9 +26,7 @@ const auth = new OAuth2(clientId, clientSecret, redirectURI);
 
 auth.on("tokens", (tokens) => db.set("tokens", tokens));
 
-const youtubeService = {};
-
-youtubeService.getCode = (res) => {
+const getCode = (res) => {
   const authUrl = auth.generateAuthUrl({
     access_type: "offline",
     scope,
@@ -36,19 +34,19 @@ youtubeService.getCode = (res) => {
   res.redirect(authUrl);
 };
 
-youtubeService.auth = ({ tokens }) => {
+const setAuth = ({ tokens }) => {
   auth.setCredentials(tokens);
   console.log("successfully set credentials.");
   console.log(tokens);
   db.set("tokens", tokens);
 };
 
-youtubeService.getToken = async (code) => {
+const getToken = async (code) => {
   const credentials = await auth.getToken(code);
-  youtubeService.auth(credentials);
+  setAuth(credentials);
 };
 
-youtubeService.findChat = async () => {
+const findChat = async () => {
   try {
     const res = await youtube.liveBroadcasts.list({
       auth,
@@ -60,6 +58,7 @@ youtubeService.findChat = async () => {
     const { data } = res;
 
     const latestChat = await data.items[0];
+
     liveChatId = latestChat.snippet.liveChatId;
     console.log(`live chat id found: ${liveChatId}`);
   } catch (error) {
@@ -67,11 +66,11 @@ youtubeService.findChat = async () => {
   }
 };
 
-youtubeService.insertMessage = async (messageText = "hello world") => {
+const insertMessage = async (messageText) => {
   await youtube.liveChatMessages.insert({
     auth,
     part: "snippet",
-    resource: {
+    requestBody: {
       snippet: {
         liveChatId,
         type: "textMessageEvent",
@@ -83,14 +82,14 @@ youtubeService.insertMessage = async (messageText = "hello world") => {
   });
 };
 
-youtubeService.stopChatTracking = async () => {
+const stopChatTracking = async () => {
   clearInterval(interval);
 };
 
 const getChatMessages = async () => {
   const res = await youtube.liveChatMessages.list({
     auth,
-    part: "snippet",
+    part: ["snippet"],
     liveChatId,
     pageToken: nextPage,
   });
@@ -102,7 +101,13 @@ const getChatMessages = async () => {
   console.log(`total messages: ${chatMessages.length}`);
 };
 
-youtubeService.startChatTracking = async () => {
+const startChatTracking = async () => {
+  if (!liveChatId) {
+    console.error(
+      'No live chat ID found. Please press the "findChat" button to get your live chat ID.'
+    );
+  }
+
   interval = setInterval(() => {
     getChatMessages();
   }, intervalTime);
@@ -120,4 +125,11 @@ const checkTokens = async () => {
 
 checkTokens();
 
-module.exports = youtubeService;
+module.exports = {
+  getCode,
+  insertMessage,
+  startChatTracking,
+  stopChatTracking,
+  findChat,
+  getToken,
+};
