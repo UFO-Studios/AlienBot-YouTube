@@ -4,9 +4,7 @@
 
 
 <head>
-    <title>youtube mod bot</title>
-    <!-- <link rel="stylesheet" href="style.css"> -->
-
+    <title>AlienBot-Youtube</title>
     <style>
         @import url("https://fonts.googleapis.com/css2?family=Inter:wght@500&display=swap");
 
@@ -19,6 +17,14 @@
             color: black;
         }
 
+        h1 {
+            font-size: 2.5rem;
+        }
+
+        p {
+            font-size: 1.1rem;
+        }
+
         .name {
             display: flex;
             justify-content: center;
@@ -29,7 +35,7 @@
         .buttons {
             display: flex;
             justify-content: center;
-            /* align-content: center; */
+            align-content: center;
             width: 100%;
         }
 
@@ -38,6 +44,62 @@
             margin-left: 10px;
             align-self: center;
             justify-self: center;
+        }
+
+        .button-24 {
+            background: #FF4742;
+            border: 1px solid #FF4742;
+            border-radius: 6px;
+            box-shadow: rgba(0, 0, 0, 0.1) 1px 2px 4px;
+            box-sizing: border-box;
+            color: #FFFFFF;
+            cursor: pointer;
+            display: inline-block;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 800;
+            line-height: 16px;
+            min-height: 40px;
+            outline: 0;
+            padding: 12px 14px;
+            text-align: center;
+            text-rendering: geometricprecision;
+            text-transform: none;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+            vertical-align: middle;
+        }
+
+        .button-24:hover,
+        .button-24:active {
+            background-color: initial;
+            background-position: 0 0;
+            color: #FF4742;
+        }
+
+        .button-24:active {
+            opacity: .5;
+        }
+
+        .card {
+            /* Add shadows to create the "card" effect */
+            box-shadow: 0 6px 10px 0 rgba(0, 0, 0, 0.2);
+            transition: 0.3s;
+            margin: 10px;
+            padding: 10px;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+
+        }
+
+        /* On mouse-over, add a deeper shadow */
+        .card:hover {
+            box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
+        }
+
+        /* Add some padding inside the card container */
+        .container {
+            padding: 2px 16px;
         }
     </style>
 </head>
@@ -48,38 +110,65 @@
     </div>
 
     <div class="buttons">
-        <a href="/auth" class="button">
-            <button>
-                auth
-            </button>
-            <p>
-                Connect your youtube account with the app. Select the one your going to go live with on youtube.
-            </p>
-        </a>
-        <a href="/findChat" class="button">
-            <button>
-                findChat
-            </button>
-            <p>
-                Press this button after going live. It finds your live stream's chat.
-            </p>
-        </a>
-        <a href="/startChatTracking" class="button">
-            <button>
-                startChatTracking
-            </button>
-            <p>
-                Press only after pressing "findChat" button. Starts tracking chat messages.
-            </p>
-        </a>
-        <a class="button" id="insertButton">
-            <button>
-                insertMessage
-            </button>
-            <p>
-                Press only after pressing "findChat" button. Inserts a message of your choice using your account.
-            </p>
-        </a>
+        <div class="card">
+            <a href="/auth" class="button">
+                <button class="button-24" role="button">auth</button>
+                <p class="container">
+                    Connect your youtube account with the app. <br>
+                    Select the one your going to go live with on youtube.
+                </p>
+            </a>
+        </div>
+
+        <div class="card">
+            <a href="/findChat" class="button">
+                <button class="button-24" role="button">find chat</button>
+                <p class="container">
+                    Press this button after going live. <br>
+                    It finds your live stream's chat.
+                </p>
+            </a>
+        </div>
+    </div>
+    <br>
+    <br>
+    <br>
+    <hr>
+    <br>
+    <br>
+    <br>
+    <div class="buttons">
+        <div class="card">
+            <a href="/startChatTracking" class="button">
+                <button class="button-24" role="button">start tracking chat</button>
+                <p class="container">
+                    Press only after pressing "findChat" button. <br>
+                    Starts tracking chat messages.
+                </p>
+            </a>
+        </div>
+
+        <div class="card">
+            <a class="button" id="insertButton">
+                <button class="button-24" role="button">insert message</button>
+                <p class="container">
+                    Press only after pressing "findChat" button. <br>
+                    Inserts a message of your choice using your account.
+                </p>
+            </a>
+        </div>
+
+
+        <div class="card">
+            <a href="/startModServices" class="button">
+                <button class="button-24" role="button">start mod over stream</button>
+                <p class="container">
+                    Press only after pressing "findChat" button. <br>
+                    Mods your chat.
+                </p>
+            </a>
+        </div>
+
     </div>
 </body>
 
@@ -97,7 +186,6 @@
         } else {
             alert("Message not sent.")
         }
-
     }) 
 </script>
 

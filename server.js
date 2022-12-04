@@ -34,6 +34,11 @@ server.get("/insertMessage", (req, res) => {
   res.redirect("/");
 });
 
+server.get("/startModServices", (req, res) => {
+  youtube.startModServices();
+  res.redirect("/");
+});
+
 server.listen(3000, () =>
   console.log("server started on http://localhost:3000!")
 );

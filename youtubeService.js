@@ -1,6 +1,7 @@
 const config = require("./config.json");
 const { google } = require("googleapis");
 const db = require("easy-db-json");
+const vidData = require("vid_data");
 
 db.setFile("./db.json");
 
@@ -20,7 +21,12 @@ let liveChatId;
 let nextPage;
 const intervalTime = config.INTERVAL_TIME || 5000;
 let interval;
-const chatMessages = [];
+const bannedWords = [
+  "word", // you thought i was gonna type in real banned words ;)
+  "hehe",
+];
+let chatMessages = [];
+let messages = [];
 
 const auth = new OAuth2(clientId, clientSecret, redirectURI);
 
@@ -99,6 +105,9 @@ const getChatMessages = async () => {
   chatMessages.push(...newMessages);
   nextPage = data.nextPageToken;
   console.log(`total messages: ${chatMessages.length}`);
+
+  console.log(chatMessages);
+  return true;
 };
 
 const startChatTracking = async () => {
@@ -123,6 +132,49 @@ const checkTokens = async () => {
   console.log("no auth tokens found.");
 };
 
+const startModServices = async () => {
+  setInterval(async () => {
+    const res = await youtube.liveChatMessages.list({
+      auth,
+      part: ["snippet"],
+      liveChatId,
+      pageToken: nextPage,
+    });
+
+    const { data } = res;
+
+    if (!messages[0]) messages = data.items;
+
+    messages = messages.map((e) => {
+      if (!e.checked) {
+        const { snippet } = e;
+        const { displayMessage, authorChannelId } = snippet;
+
+        const words = displayMessage.split(" ");
+
+        words.forEach(async (word) => {
+          if (bannedWords.includes(word)) {
+            console.log(`banned word used: ${word}`);
+
+            const channelName = vidData
+              .get_channel_id_and_name(
+                `https://youtube.com/channel/${authorChannelId}`
+              )
+              .then((data) => data.channel_name);
+
+            await insertMessage(
+              `@${channelName} That word is not allowed to use!`
+            );
+          }
+        });
+
+        e.checked = true;
+        return e;
+      }
+    });
+  }, intervalTime);
+};
+
 checkTokens();
 
 module.exports = {
@@ -132,4 +184,5 @@ module.exports = {
   stopChatTracking,
   findChat,
   getToken,
+  startModServices,
 };
