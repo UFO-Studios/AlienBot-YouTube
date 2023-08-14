@@ -10,7 +10,8 @@ const OAuth2 = google.auth.OAuth2;
 
 const clientId = config.CLIENT_ID;
 const clientSecret = config.CLIENT_SECRET;
-const redirectURI = "http://localhost:3000/callback";
+const redirectURI = config.CALLBACK_DOMAIN+"/callback";
+
 const scope = [
   "https://www.googleapis.com/auth/youtube.readonly",
   "https://www.googleapis.com/auth/youtube",
@@ -37,6 +38,7 @@ const getCode = (res) => {
     access_type: "offline",
     scope,
   });
+  console.log("auth url:"+authUrl);
   res.redirect(authUrl);
 };
 
