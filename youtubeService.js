@@ -16,7 +16,7 @@ const scope = [
   "https://www.googleapis.com/auth/youtube.readonly",
   "https://www.googleapis.com/auth/youtube",
   "https://www.googleapis.com/auth/youtube.force-ssl",
-  "https://www.googleapis.com/auth/userinfo.profile",
+  //"https://www.googleapis.com/auth/userinfo.profile", if we ever want to get username
 ];
 
 let liveChatId;
@@ -55,9 +55,7 @@ const getToken = async (code) => {
   setAuth(credentials);
 };
 
-const setUser = async (email, photo) => {
-  
-}
+
 
 const findChat = async () => {
   try {
@@ -139,6 +137,19 @@ const checkTokens = async () => {
   console.log("no auth tokens found.");
 };
 
+const isBadWord = (word) => {
+  const ProfanityEngine = require("@coffeeandfun/google-profanity-words").ProfanityEngine;
+  const profanityEngine = new ProfanityEngine();
+  return profanityEngine.search(word);
+};
+
+
+const addCommand = async (command, response) => {
+  await db.set(command, response);
+  await insertMessage(`@${channelName} Command ${command} added!`);
+  return true;
+};
+
 const startModServices = async () => {
   setInterval(async () => {
     const res = await youtube.liveChatMessages.list({
@@ -160,7 +171,7 @@ const startModServices = async () => {
         const words = displayMessage.split(" ");
 
         words.forEach(async (word) => {
-          if (bannedWords.includes(word)) {
+          if (bannedWords.includes(word) || isBadWord(word)) {// word no longer looks like a word xD
             console.log(`banned word used: ${word}`);
 
             const channelName = vidData
@@ -174,6 +185,17 @@ const startModServices = async () => {
             );
           }
         });
+        if (displayMessage.startsWith("!")) {
+          const command = displayMessage.split(" ")[0].slice(1);
+          const response = db.get(command);
+          if (response) {
+            await insertMessage(response);
+          }
+          if (command === "addCommand") {
+            const newCommand = displayMessage.split(" ")[1];
+            const newResponse = displayMessage.split(" ").slice(2).join(" ");
+            await addCommand(newCommand, newResponse);
+          }
 
         e.checked = true;
         return e;
