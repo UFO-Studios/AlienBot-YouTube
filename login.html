@@ -4,7 +4,7 @@
 
 
 <head>
-    <title>AlienBot-Youtube</title>
+    <title>AlienBot-Youtube - Login</title>
     <style>
         @import url("https://fonts.googleapis.com/css2?family=Inter:wght@500&display=swap");
 
@@ -61,7 +61,7 @@
             line-height: 16px;
             min-height: 40px;
             outline: 0;
-            padding: 12px 14px;
+            padding: 40px 60px;
             text-align: center;
             text-rendering: geometricprecision;
             text-transform: none;
@@ -105,13 +105,13 @@
 
 <body>
     <div class="name">
-        <h1>AlienBot-Youtube</h1>
+        <h1>AlienBot-Youtube: Login</h1>
     </div>
 
     <div class="buttons">
         <div class="card">
             <a href="/auth" class="button">
-                <button class="button-24" role="button">auth</button>
+                <button class="button-24" role="button">Login</button>
                 <p class="container">
                     Connect your youtube account with the app. <br>
                     Select the one your going to go live with on youtube.
@@ -119,56 +119,10 @@
             </a>
         </div>
 
-        <div class="card">
-            <a href="/findChat" class="button">
-                <button class="button-24" role="button">find chat</button>
-                <p class="container">
-                    Press this button after going live. <br>
-                    It finds your live stream's chat.
-                </p>
-            </a>
-        </div>
+        
     </div>
     <br>
-    <br>
-    <br>
-    <hr>
-    <br>
-    <br>
-    <br>
-    <div class="buttons">
-        <div class="card">
-            <a href="/startChatTracking" class="button">
-                <button class="button-24" role="button">start tracking chat</button>
-                <p class="container">
-                    Press only after pressing "findChat" button. <br>
-                    Starts tracking chat messages.
-                </p>
-            </a>
-        </div>
-
-        <div class="card">
-            <a class="button" id="insertButton">
-                <button class="button-24" role="button">insert message</button>
-                <p class="container">
-                    Press only after pressing "findChat" button. <br>
-                    Inserts a message of your choice using your account.
-                </p>
-            </a>
-        </div>
-
-
-        <div class="card">
-            <a href="/startModServices" class="button">
-                <button class="button-24" role="button">start mod over stream</button>
-                <p class="container">
-                    Press only after pressing "findChat" button. <br>
-                    Mods your chat.
-                </p>
-            </a>
-        </div>
-
-    </div>
+    
 </body>
 
 <script>
@@ -181,7 +135,7 @@
         if (confirm.startsWith("y")) {
             console.log(`Message sent! Message content:\n${msg}`)
 
-            window.location.href = `http://localhost:3000/insertMessage?message=${msg}`;
+            window.location.href = `/insertMessage?message=${msg}`;
         } else {
             alert("Message not sent.")
         }

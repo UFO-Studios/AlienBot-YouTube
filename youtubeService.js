@@ -16,6 +16,7 @@ const scope = [
   "https://www.googleapis.com/auth/youtube.readonly",
   "https://www.googleapis.com/auth/youtube",
   "https://www.googleapis.com/auth/youtube.force-ssl",
+  "https://www.googleapis.com/auth/userinfo.profile",
 ];
 
 let liveChatId;
@@ -38,7 +39,7 @@ const getCode = (res) => {
     access_type: "offline",
     scope,
   });
-  console.log("auth url:"+authUrl);
+  //console.log("auth url:"+authUrl);
   res.redirect(authUrl);
 };
 
@@ -53,6 +54,10 @@ const getToken = async (code) => {
   const credentials = await auth.getToken(code);
   setAuth(credentials);
 };
+
+const setUser = async (email, photo) => {
+  
+}
 
 const findChat = async () => {
   try {

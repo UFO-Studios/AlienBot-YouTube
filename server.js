@@ -1,19 +1,34 @@
 const express = require("express");
 const path = require("node:path");
 const youtube = require("./youtubeService");
+const db = require("./db.json")
 
 const server = express();
 
+function isLoggedIn() {
+  if (!db.tokens) {
+    return "/auth";
+  } else {
+    return "/main";
+  }
+}
+
 server.get("/", (req, res) =>
-  res.sendFile(path.join(__dirname, "/index.html"))
+  res.redirect(isLoggedIn())
+  //res.sendFile(path.join(__dirname, "/index.html"))
 );
 
+server.get("/main", (req, res) => {
+  res.sendFile(path.join(__dirname, "/main.html"));
+});
 server.get("/auth", (req, res) => {
   youtube.getCode(res);
 });
 
 server.get("/callback", (req, res) => {
   const code = req.query;
+  const email = req.email;
+  const photo = req.picture;
   youtube.getToken(code);
 
   res.redirect("/");
