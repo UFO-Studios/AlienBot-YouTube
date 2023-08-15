@@ -145,8 +145,10 @@ const isBadWord = (word) => {
 
 
 const addCommand = async (command, response) => {
+  db.setFile("./commands.json")
   await db.set(command, response);
   await insertMessage(`@${channelName} Command ${command} added!`);
+  db.setFile("./db.json")
   return true;
 };
 
@@ -163,7 +165,7 @@ const startModServices = async () => {
 
     if (!messages[0]) messages = data.items;
 
-    messages = messages.map((e) => {
+    messages = messages.map(async (e) => {
       if (!e.checked) {
         const { snippet } = e;
         const { displayMessage, authorChannelId } = snippet;
@@ -195,13 +197,15 @@ const startModServices = async () => {
             const newCommand = displayMessage.split(" ")[1];
             const newResponse = displayMessage.split(" ").slice(2).join(" ");
             await addCommand(newCommand, newResponse);
+            await insertMessage("Command added!");
           }
 
         e.checked = true;
         return e;
       }
-    });
+    };
   }, intervalTime);
+})
 };
 
 checkTokens();
