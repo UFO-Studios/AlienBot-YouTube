@@ -2,7 +2,15 @@ const config = require("./config.json");
 const { google } = require("googleapis");
 const db = require("easy-db-json");
 const vidData = require("vid_data");
-const swearjar = require('swearjar');
+const swearjar = require("swearjar");
+const { chat } = require("googleapis/build/src/apis/chat");
+
+/** @typedef Message
+ *  @property {string} kind
+ *  @property {string} etag
+ *  @property {string} id
+ * @property {{ type: string, liveChatId: string, authorChannelId: string, publishedAt: string, hasDisplayContent: boolean, displayMessage: string, textMessageDetails: {messageText: string}}} snippet
+ */
 
 db.setFile("./db.json");
 
@@ -28,6 +36,9 @@ const bannedWords = [
   "word", // you thought i was gonna type in real banned words ;)
   "hehe",
 ];
+/**
+ * @type {Message[]}
+ */
 let chatMessages = [];
 let messages = [];
 
@@ -106,16 +117,12 @@ const getChatMessages = async (returnThem) => {
 
   const { data } = res;
   const newMessages = data.items;
-  chatMessages.push(...newMessages);
-  nextPage = data.nextPageToken;
-  console.log(`total messages: ${chatMessages.length}`);
 
-  if (!returnThem) {
-    return true;
-  } else {
-    //console.log(chatMessages);
-    return chatMessages;
-  }
+  chatMessages = newMessages;
+
+  nextPage = data.nextPageToken;
+
+  console.log(`total new messages: ${newMessages.length}`);
 };
 
 const startChatTracking = async () => {
@@ -140,21 +147,18 @@ const checkTokens = async () => {
   console.log("no auth tokens found.");
 };
 
-const isBadWord = (word) => {
-  return swearjar.profane(word);
+const containsBadWords = (message) => {
+  return swearjar.profane(message);
 };
 
 const addCommand = async (command, response) => {
-  db.setFile("./commands.json");
   await db.set(command, response);
-  await insertMessage(`@${channelName} Command ${command} added!`);
-  db.setFile("./db.json");
+  await insertMessage(`Command ${command} added!`);
   return true;
 };
 
 const ModServices = async (res) => {
   setInterval(async () => {
-    
     const { data } = res;
 
     if (!messages[0]) messages = data.items;
@@ -204,50 +208,68 @@ const ModServices = async (res) => {
   });
 };
 
-async function mod(MsgToFunc) {
-    const MsgString = MsgToFunc.toString()
-    const words = MsgString.split(" ");
-    words.forEach(async (word) => {
-      if (bannedWords.includes(word) || isBadWord(word)) {
-        // word no longer looks like a word xD
-        console.log(`banned word used: ${word}`);
+/**
+ *
+ * @param {Message} messageObj
+ * @returns
+ */
+async function mod(messageObj) {
+  // const MsgString = MsgToFunc.toString();
+  // const words = MsgString.split(" ");
+  // words.forEach(async (word) => {
+  //   if (bannedWords.includes(word) || isBadWord(word)) {
+  //     // word no longer looks like a word xD
+  //     console.log(`banned word used: ${word}`);
 
-        const channelName = vidData
-          .get_channel_id_and_name(
-            `https://youtube.com/channel/${authorChannelId}`
-          )
-          .then((data) => data.channel_name);
+  //     const channelName = vidData
+  //       .get_channel_id_and_name(
+  //         `https://youtube.com/channel/${authorChannelId}`
+  //       )
+  //       .then((data) => data.channel_name);
 
-        await insertMessage(
-          `@${channelName} That word is not allowed to use!`
-        );
-      }
-    });
-    if (MsgString.startsWith("!")) {
-      const command = MsgString.split(" ")[0].slice(1);
-      const response = db.get(command);
-      if (response) {
-        await insertMessage(response);
-      }
-      if (command === "addCommand") {
+  //     await insertMessage(`@${channelName} That word is not allowed to use!`);
+  //   }
+  // });
+  const message = messageObj.snippet.displayMessage;
+  if (containsBadWords(message)) {
+    return await await insertMessage(
+      `@${messageObj.snippet.authorChannelId} That word is not allowed to use!`
+    );
+  }
+
+  if (message.startsWith("!")) {
+    const fragments = message.split(" ");
+    const command = fragments[0].slice(1);
+
+    switch (command) {
+      case "addCommand":
         console.log("adding command");
-        const newCommand = MsgString.split(" ")[1];
-        const newResponse = MsgString.split(" ").slice(2).join(" ");
+        const newCommand = fragments[1];
+        const newResponse = fragments[2];
+
+        console.log(`${newCommand}: ${newResponse}`);
+
         await addCommand(newCommand, newResponse);
-        await insertMessage("Command added!");
-      }
+        await insertMessage(
+          `@${messageObj.snippet.authorChannelId} Command added!`
+        );
+        return;
     }
-    return
-  };
+
+    const response = db.get(command);
+    if (response) {
+      await insertMessage(response);
+    }
+  }
+  return;
+}
 
 async function startModServices() {
-  getChatMessages(true).then(async (messages) => {
-    //console.log(messages);
-    console.log(messages[0].snippet.displayMessage);
-    messages.forEach(async (message) => {
+  setInterval(() => {
+    for (const message of chatMessages) {
       mod(message);
-    })
-  });
+    }
+  }, intervalTime + 100);
 }
 
 checkTokens();
@@ -260,5 +282,5 @@ module.exports = {
   findChat,
   getToken,
   ModServices,
-  startModServices
+  startModServices,
 };
