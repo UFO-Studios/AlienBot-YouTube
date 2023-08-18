@@ -16,7 +16,7 @@ async function isLoggedIn() {
 
 server.get(
   "/",
-   (req, res) =>  res.redirect(isLoggedIn())
+   async (req, res) =>  res.redirect(await isLoggedIn())
 );
 
 server.get("/main", (req, res) => {
