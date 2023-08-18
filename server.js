@@ -1,14 +1,22 @@
 const express = require("express");
 const path = require("node:path");
 const youtube = require("./youtubeService");
-const isLoggedIn = require("./utils/isLoggedIn.js");
+//const isLoggedIn = require("./utils/isLoggedIn.js");
+const db = require("../db.json");
 
 const server = express();
 
+async function isLoggedIn() {
+  if (!db.tokens) {
+    return "/auth";
+  } else {
+    return "/main";
+  }
+}
+
 server.get(
   "/",
-  (req, res) => res.redirect(isLoggedIn())
-  //res.sendFile(path.join(__dirname, "/index.html"))
+   (req, res) =>  res.redirect(isLoggedIn())
 );
 
 server.get("/main", (req, res) => {
