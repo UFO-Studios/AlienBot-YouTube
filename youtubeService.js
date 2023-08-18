@@ -2,6 +2,7 @@ const config = require("./config.json");
 const { google } = require("googleapis");
 const db = require("easy-db-json");
 const vidData = require("vid_data");
+const swearjar = require('swearjar');
 
 db.setFile("./db.json");
 
@@ -10,7 +11,7 @@ const OAuth2 = google.auth.OAuth2;
 
 const clientId = config.CLIENT_ID;
 const clientSecret = config.CLIENT_SECRET;
-const redirectURI = config.CALLBACK_DOMAIN+"/callback";
+const redirectURI = config.CALLBACK_DOMAIN + "/callback";
 
 const scope = [
   "https://www.googleapis.com/auth/youtube.readonly",
@@ -55,8 +56,6 @@ const getToken = async (code) => {
   setAuth(credentials);
 };
 
-
-
 const findChat = async () => {
   try {
     const res = await youtube.liveBroadcasts.list({
@@ -97,7 +96,7 @@ const stopChatTracking = async () => {
   clearInterval(interval);
 };
 
-const getChatMessages = async () => {
+const getChatMessages = async (returnThem) => {
   const res = await youtube.liveChatMessages.list({
     auth,
     part: ["snippet"],
@@ -111,8 +110,12 @@ const getChatMessages = async () => {
   nextPage = data.nextPageToken;
   console.log(`total messages: ${chatMessages.length}`);
 
-  console.log(chatMessages);
-  return true;
+  if (!returnThem) {
+    return true;
+  } else {
+    //console.log(chatMessages);
+    return chatMessages;
+  }
 };
 
 const startChatTracking = async () => {
@@ -138,29 +141,20 @@ const checkTokens = async () => {
 };
 
 const isBadWord = (word) => {
-  const ProfanityEngine = require("@coffeeandfun/google-profanity-words").ProfanityEngine;
-  const profanityEngine = new ProfanityEngine();
-  return profanityEngine.search(word);
+  return swearjar.profane(word);
 };
 
-
 const addCommand = async (command, response) => {
-  db.setFile("./commands.json")
+  db.setFile("./commands.json");
   await db.set(command, response);
   await insertMessage(`@${channelName} Command ${command} added!`);
-  db.setFile("./db.json")
+  db.setFile("./db.json");
   return true;
 };
 
-const startModServices = async () => {
+const ModServices = async (res) => {
   setInterval(async () => {
-    const res = await youtube.liveChatMessages.list({
-      auth,
-      part: ["snippet"],
-      liveChatId,
-      pageToken: nextPage,
-    });
-
+    
     const { data } = res;
 
     if (!messages[0]) messages = data.items;
@@ -173,7 +167,8 @@ const startModServices = async () => {
         const words = displayMessage.split(" ");
 
         words.forEach(async (word) => {
-          if (bannedWords.includes(word) || isBadWord(word)) {// word no longer looks like a word xD
+          if (bannedWords.includes(word) || isBadWord(word)) {
+            // word no longer looks like a word xD
             console.log(`banned word used: ${word}`);
 
             const channelName = vidData
@@ -194,19 +189,66 @@ const startModServices = async () => {
             await insertMessage(response);
           }
           if (command === "addCommand") {
+            console.log("adding command");
             const newCommand = displayMessage.split(" ")[1];
             const newResponse = displayMessage.split(" ").slice(2).join(" ");
             await addCommand(newCommand, newResponse);
             await insertMessage("Command added!");
           }
 
-        e.checked = true;
-        return e;
+          e.checked = true;
+          return e;
+        }
       }
-    };
-  }, intervalTime);
-})
+    }, intervalTime);
+  });
 };
+
+async function mod(MsgToFunc) {
+    const MsgString = MsgToFunc.toString()
+    const words = MsgString.split(" ");
+    words.forEach(async (word) => {
+      if (bannedWords.includes(word) || isBadWord(word)) {
+        // word no longer looks like a word xD
+        console.log(`banned word used: ${word}`);
+
+        const channelName = vidData
+          .get_channel_id_and_name(
+            `https://youtube.com/channel/${authorChannelId}`
+          )
+          .then((data) => data.channel_name);
+
+        await insertMessage(
+          `@${channelName} That word is not allowed to use!`
+        );
+      }
+    });
+    if (MsgString.startsWith("!")) {
+      const command = MsgString.split(" ")[0].slice(1);
+      const response = db.get(command);
+      if (response) {
+        await insertMessage(response);
+      }
+      if (command === "addCommand") {
+        console.log("adding command");
+        const newCommand = MsgString.split(" ")[1];
+        const newResponse = MsgString.split(" ").slice(2).join(" ");
+        await addCommand(newCommand, newResponse);
+        await insertMessage("Command added!");
+      }
+    }
+    return
+  };
+
+async function startModServices() {
+  getChatMessages(true).then(async (messages) => {
+    //console.log(messages);
+    console.log(messages[0].snippet.displayMessage);
+    messages.forEach(async (message) => {
+      mod(message);
+    })
+  });
+}
 
 checkTokens();
 
@@ -217,5 +259,6 @@ module.exports = {
   stopChatTracking,
   findChat,
   getToken,
-  startModServices,
+  ModServices,
+  startModServices
 };

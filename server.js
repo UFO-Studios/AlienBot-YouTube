@@ -21,37 +21,36 @@ server.get("/", (req, res) =>
 server.get("/main", (req, res) => {
   res.sendFile(path.join(__dirname, "/main.html"));
 });
+
 server.get("/auth", (req, res) => {
   youtube.getCode(res);
 });
 
 server.get("/callback", (req, res) => {
   const code = req.query;
-  const email = req.email;
-  const photo = req.picture;
   youtube.getToken(code);
 
-  res.redirect("/");
+  res.redirect("/main");
 });
 
 server.get("/findChat", (req, res) => {
   youtube.findChat();
-  res.redirect("/");
+  res.redirect("/main");
 });
 
 server.get("/startChatTracking", (req, res) => {
   youtube.startChatTracking();
-  res.redirect("/");
+  res.redirect("/main");
 });
 
 server.get("/insertMessage", (req, res) => {
   youtube.insertMessage(req.query.message);
-  res.redirect("/");
+  res.redirect("/main");
 });
 
 server.get("/startModServices", (req, res) => {
   youtube.startModServices();
-  res.redirect("/");
+  res.redirect("/main");
 });
 
 server.listen(4000, () =>
