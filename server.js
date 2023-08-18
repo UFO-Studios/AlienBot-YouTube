@@ -2,7 +2,7 @@ const express = require("express");
 const path = require("node:path");
 const youtube = require("./youtubeService");
 //const isLoggedIn = require("./utils/isLoggedIn.js");
-const db = require("../db.json");
+const db = require("./db.json");
 
 const server = express();
 
