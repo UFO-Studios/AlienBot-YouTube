@@ -116,12 +116,6 @@
         </a>
       </div>
       <div class="card">
-        <a href="/startLivestream" id="startLivestreamButton" class="button">
-          <button class="button-24" role="button">Start streaming</button>
-          <p class="container">This button makes you go live on youtube.</p>
-        </a>
-      </div>
-      <div class="card">
         <a href="/findChat" class="button">
           <button class="button-24" role="button">find chat</button>
           <p class="container">
@@ -198,38 +192,5 @@
         alert("Message not sent.");
       }
     });
-
-    const allowedPrivacyStatuses = ["public", "private", "unlisted"];
-
-    function handleStartLivestream(e) {
-      e.preventDefault();
-
-      const title = prompt("Please type in the title of the stream.");
-      const description = prompt(
-        "Please type in the description of the stream."
-      );
-      const privacyStatus = prompt(
-        "Please type in the privacy status of the stream. (private/public/unlisted)"
-      );
-
-      if (!allowedPrivacyStatuses.includes(privacyStatus))
-        return alert("Invalid privacy status");
-
-      const confirm = prompt(
-        `The stream's title is ${title}, description is ${description} and privacy status is ${privacyStatus}. confirm? (yes/no)`
-      );
-
-      if (confirm.startsWith("y")) {
-        console.log(`Live stream started!`);
-
-        window.location.href = `/startLivestream?title=${title}&description=${description}&privacyStatus=${privacyStatus}`;
-      } else {
-        alert("Message not sent.");
-      }
-    }
-
-    document
-      .getElementById("startLivestreamButton")
-      .addEventListener("click", handleStartLivestream);
   </script>
 </html>

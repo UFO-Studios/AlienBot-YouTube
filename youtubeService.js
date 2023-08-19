@@ -35,15 +35,11 @@ let liveChatId;
 let nextPage;
 const intervalTime = config.INTERVAL_TIME || 5000;
 let interval;
-// const bannedWords = [
-//   "word", // you thought i was gonna type in real banned words ;)
-//   "hehe",
-// ];
+
 /**
  * @type {Message[]}
  */
 let chatMessages = [];
-let messages = [];
 
 const auth = new OAuth2(clientId, clientSecret, redirectURI);
 
@@ -187,7 +183,7 @@ async function startModServices() {
 
   setInterval(() => {
     for (const message of chatMessages) {
-      if (db.get("latestMessage" == message)) continue; // skip the below part if the message has already been checked. This prevents messages from being checked more than once.
+      if (db.get("latestMessage" == message)) continue;
 
       mod(message);
       if (db.get("FirstMessage") == null) {
@@ -200,22 +196,6 @@ async function startModServices() {
   }, intervalTime + 100);
 }
 
-async function startLivestream(title, description, privacyStatus) {
-  const stream = await youtube.liveBroadcasts.insert({
-    auth,
-    requestBody: {
-      snippet: {
-        title,
-        description,
-        actualStartTime: Date.now(),
-      },
-      status: {
-        privacyStatus,
-        madeForKids: false,
-      },
-    },
-  });
-}
 async function startPromoting() {
   setTimeout(async () => {
     insertMessage(config.PROMOTIONAL_MESSAGE);
@@ -240,6 +220,5 @@ module.exports = {
   getToken,
   //ModServices,
   startModServices,
-  startLivestream,
   startPromoting,
 };

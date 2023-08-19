@@ -5,7 +5,7 @@ const isLoggedIn = require("./utils/isLoggedIn.js");
 
 const server = express();
 
-server.get("/", async (_req, res) => res.redirect(await isLoggedIn()));
+server.get("/", async (_req, res) => res.redirect(isLoggedIn()));
 
 server.get("/main", (_req, res) => {
   res.sendFile(path.join(__dirname, "/main.html"));
@@ -23,7 +23,12 @@ server.get("/callback", (req, res) => {
 });
 
 server.get("/findChat", (_req, res) => {
-  youtube.findChat();
+  try {
+    youtube.findChat();
+  } catch (e) {
+    console.error(e.errors[0].message);
+  }
+
   res.redirect("/main");
 });
 
@@ -42,22 +47,19 @@ server.get("/startModServices", (_req, res) => {
   res.redirect("/main");
 });
 
-server.get("/startLivestream", (req, res) => {
-  const { title, description, privacyStatus } = req.query;
-  youtube.startLivestream(title, description, privacyStatus);
+server.get("/startPromoting", (_req, res) => {
+  youtube.startPromoting();
   res.redirect("/main");
 });
 
-server.get("/startPromoting", (_req, res) => {
-  youtube.startPromoting()
-  res.redirect("/main")
-})
-
 server.get("/fullStart", async (req, res) => {
-  await youtube.startLivestream()
-  await youtube.findChat();
-  youtube.startChatTracking();
-  youtube.startModServices();
+  try {
+    await youtube.findChat();
+    youtube.startChatTracking();
+    youtube.startModServices();
+  } catch (e) {
+    console.error(e.errors[0].message);
+  }
 
   res.redirect("/main");
 });
