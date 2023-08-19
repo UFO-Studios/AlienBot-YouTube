@@ -54,6 +54,13 @@ server.get("/startModServices", (req, res) => {
   res.redirect("/main");
 });
 
+server.get("/fullStart", (req, res) => {
+  youtube.findChat();
+  youtube.startChatTracking();
+  youtube.startModServices();
+  res.redirect("/main");
+});
+
 server.listen(4000, () =>
   console.log("server started on http://localhost:4000!")
 );

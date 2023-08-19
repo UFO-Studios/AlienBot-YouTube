@@ -153,7 +153,7 @@ const containsBadWords = (message) => {
 
 const addCommand = async (command, response) => {
   await db.set(command, response);
-  await insertMessage(`Command ${command} added!`);
+  //await insertMessage(`Command ${command} added!`);
   return true;
 };
 
@@ -214,25 +214,12 @@ const ModServices = async (res) => {
  * @returns
  */
 async function mod(messageObj) {
-  // const MsgString = MsgToFunc.toString();
-  // const words = MsgString.split(" ");
-  // words.forEach(async (word) => {
-  //   if (bannedWords.includes(word) || isBadWord(word)) {
-  //     // word no longer looks like a word xD
-  //     console.log(`banned word used: ${word}`);
-
-  //     const channelName = vidData
-  //       .get_channel_id_and_name(
-  //         `https://youtube.com/channel/${authorChannelId}`
-  //       )
-  //       .then((data) => data.channel_name);
-
-  //     await insertMessage(`@${channelName} That word is not allowed to use!`);
-  //   }
-  // });
   const message = messageObj.snippet.displayMessage;
+
+
   if (containsBadWords(message)) {
-    return await await insertMessage(
+    console.log("Banned word used!")
+    return await insertMessage(
       `@${messageObj.snippet.authorChannelId} That word is not allowed to use!`
     );
   }
@@ -261,14 +248,20 @@ async function mod(messageObj) {
       await insertMessage(response);
     }
   }
-  return;
-}
+  return; 
+} 
+
 
 async function startModServices() {
+  console.log("starting mod services");
+  db.set("uptime", Date.now());
   setInterval(() => {
     for (const message of chatMessages) {
+      if (db.get("latestMessage" == message)) continue // skip the below part if the message has already been checked. This prevents messages from being checked more than once.
+
       mod(message);
-    }
+      db.set("latestMessage", message);  //fixed xD oh damn thi is big brain but the previous one wouldve also worked cause objects are pointers like in C, just remembered that, so I think that wouldve also worked, but im not sure
+      } 
   }, intervalTime + 100);
 }
 
