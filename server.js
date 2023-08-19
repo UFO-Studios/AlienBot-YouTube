@@ -54,6 +54,11 @@ server.get("/startModServices", (req, res) => {
   res.redirect("/main");
 });
 
+server.get("/startPromoting", (_req, res) => {
+  youtube.startPromoting()
+  res.redirect("/main")
+})
+
 server.get("/fullStart", (req, res) => {
   youtube.findChat();
   youtube.startChatTracking();

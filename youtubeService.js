@@ -19,6 +19,9 @@ db.setFile("./db.json");
 const youtube = google.youtube("v3");
 const OAuth2 = google.auth.OAuth2;
 
+const SECOND = 1000
+const MINUTE = SECOND * 60
+
 const clientId = config.CLIENT_ID;
 const clientSecret = config.CLIENT_SECRET;
 const redirectURI = config.CALLBACK_DOMAIN + "/callback";
@@ -179,22 +182,18 @@ async function mod(messageObj) {
     handleCommand(message)
   }
 
-  
   return;
 } 
-
-setTimeout(() => {
-  
-}, 60000 * 3) // 1 minuite * 3 = 3 minutes yay
 
 async function startModServices() {
   console.log("starting mod services");
   db.set("uptime", Date.now());
+
   setInterval(() => {
     for (const message of chatMessages) {
       if (db.get("latestMessage" == message)) continue // skip the below part if the message has already been checked. This prevents messages from being checked more than once.
 
-      mod(message, i);
+      mod(message);
       if (db.get("FirstMessage") == null) {
         db.set("FirstMessage", message)
         db.set("latestMessage", message);
@@ -203,6 +202,13 @@ async function startModServices() {
       }
       } 
   }, intervalTime + 100);
+}
+
+async function startPromoting() {
+  setTimeout(() => {
+    insertMessage(config.PROMOTIONAL_MESSAGE) 
+    const random = rand(1)
+  }, MINUTE * 3)  
 }
 
 checkTokens();
@@ -216,4 +222,5 @@ module.exports = {
   getToken,
   //ModServices,
   startModServices,
+  startPromoting
 };
