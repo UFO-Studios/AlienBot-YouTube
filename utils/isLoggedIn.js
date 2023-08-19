@@ -1,6 +1,6 @@
 const db = require("../db.json");
 
-module.exports = async function isLoggedIn() {
+module.exports = function isLoggedIn() {
   if (!db.tokens) {
     return "/auth";
   } else {

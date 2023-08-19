@@ -1,9 +1,9 @@
 const config = require("./config.json");
 const { google } = require("googleapis");
 const db = require("easy-db-json");
-const swearjar = require("swearjar");
-const handleCommand = require("./commands/commands");
-const rand = require("./utils/generateRandom");
+const containsBadWords = require("../utils/containsBadWords.js");
+const handleCommand = require("./commands/commands.js");
+const rand = require("./utils/generateRandom.js");
 
 /** @typedef Message
  *  @property {string} kind
@@ -35,42 +35,42 @@ let liveChatId;
 let nextPage;
 const intervalTime = config.INTERVAL_TIME || 5000;
 let interval;
-// const bannedWords = [
-//   "word", // you thought i was gonna type in real banned words ;)
-//   "hehe",
-// ];
+
 /**
  * @type {Message[]}
  */
 let chatMessages = [];
-let messages = [];
 
 const auth = new OAuth2(clientId, clientSecret, redirectURI);
 
-auth.on("tokens", (tokens) => db.set("tokens", tokens));
+auth.on("tokens", function (tokens) {
+  db.set("tokens", tokens);
+});
 
-const getCode = (res) => {
+async function getCode(res) {
   res.redirect(
     auth.generateAuthUrl({
       access_type: "offline",
       scope,
     })
   );
-};
+}
 
-const setAuth = ({ tokens }) => {
+async function setAuth({ tokens }) {
   auth.setCredentials(tokens);
   console.log("successfully set credentials.");
   console.log(tokens);
   db.set("tokens", tokens);
-};
+}
 
-const getToken = async (code) => {
+async function getToken(code) {
   const credentials = await auth.getToken(code);
   setAuth(credentials);
-};
+}
 
-const findChat = async () => {
+async function findChat() {
+  db.set("uptime", Date.now());
+
   try {
     const res = await youtube.liveBroadcasts.list({
       auth,
@@ -86,11 +86,11 @@ const findChat = async () => {
     liveChatId = latestChat.snippet.liveChatId;
     console.log(`live chat id found: ${liveChatId}`);
   } catch (error) {
-    console.log(error);
+    console.log("Errors are: " + error.errors.join(", "));
   }
-};
+}
 
-const insertMessage = async (messageText) => {
+async function insertMessage(messageText) {
   await youtube.liveChatMessages.insert({
     auth,
     part: "snippet",
@@ -104,13 +104,13 @@ const insertMessage = async (messageText) => {
       },
     },
   });
-};
+}
 
-const stopChatTracking = async () => {
+async function stopChatTracking() {
   clearInterval(interval);
-};
+}
 
-const getChatMessages = async (returnThem) => {
+async function getChatMessages() {
   const res = await youtube.liveChatMessages.list({
     auth,
     part: ["snippet"],
@@ -126,21 +126,21 @@ const getChatMessages = async (returnThem) => {
   nextPage = data.nextPageToken;
 
   console.log(`total new messages: ${newMessages.length}`);
-};
+}
 
-const startChatTracking = async () => {
+async function startChatTracking() {
   if (!liveChatId) {
     console.error(
       'No live chat ID found. Please press the "findChat" button to get your live chat ID.'
     );
   }
 
-  interval = setInterval(() => {
+  interval = setInterval(function () {
     getChatMessages();
   }, intervalTime);
-};
+}
 
-const checkTokens = async () => {
+async function checkTokens() {
   const tokens = await db.get("tokens");
 
   if (tokens) {
@@ -148,16 +148,7 @@ const checkTokens = async () => {
     return auth.setCredentials(tokens);
   }
   console.log("no auth tokens found.");
-};
-
-const containsBadWords = (message) => {
-  return swearjar.profane(message);
-};
-
-const addCommand = async (command, response) => {
-  await db.set(command, response);
-  return true;
-};
+}
 
 /**
  *
@@ -182,17 +173,16 @@ async function mod(messageObj) {
 }
 
 async function startModServices() {
-  console.log("starting mod services");
-  db.set("uptime", Date.now());
-
-  setInterval(() => {
+  setInterval(function () {
     for (const message of chatMessages) {
-      if (db.get("latestMessage" == message)) continue; // skip the below part if the message has already been checked. This prevents messages from being checked more than once.
+      if (db.get("latestMessage" == message)) {
+        continue;
+      }
 
       mod(message);
+      
       if (db.get("FirstMessage") == null) {
         db.set("FirstMessage", message);
-        db.set("latestMessage", message);
       } else {
         db.set("latestMessage", message);
       }
@@ -200,32 +190,16 @@ async function startModServices() {
   }, intervalTime + 100);
 }
 
-async function startLivestream(title, description, privacyStatus) {
-  const stream = await youtube.liveBroadcasts.insert({
-    auth,
-    requestBody: {
-      snippet: {
-        title,
-        description,
-        actualStartTime: Date.now(),
-      },
-      status: {
-        privacyStatus,
-        madeForKids: false,
-      },
-    },
-  });
-}
 async function startPromoting() {
-  setTimeout(async () => {
+  setTimeout(async function () {
     insertMessage(config.PROMOTIONAL_MESSAGE);
     const msgLine = rand(1, 6);
 
     const filePath = path.join(__dirname, "txt", "scheduled.txt");
     const data = await fs.readFile(filePath, { encoding: "utf-8" }).split("\n");
 
-    await insertMessage(data[msgLine])
-    return true
+    await insertMessage(data[msgLine]);
+    return true;
   }, MINUTE * 3);
 }
 
@@ -238,8 +212,6 @@ module.exports = {
   stopChatTracking,
   findChat,
   getToken,
-  //ModServices,
   startModServices,
-  startLivestream,
   startPromoting,
 };
