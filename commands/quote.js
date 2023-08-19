@@ -7,10 +7,10 @@ async function getQuote() {
     const fileLine = generateRandom(1, 24)
     //read quotes.txt
 
-    const filePath = path.join(__dirname, 'quotes.txt');
+    const filePath = path.join(path.resolve("../"), "txt", "quotes.txt")
     const data = await fs.readFile(filePath, { encoding: 'utf-8' }).split("\n")
 
-    return data[fileLine]
+    return data[fileLine] 
 }
 
 async function quote() {

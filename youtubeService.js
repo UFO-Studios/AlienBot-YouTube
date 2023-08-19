@@ -4,8 +4,8 @@ const db = require("easy-db-json");
 const vidData = require("vid_data");
 const swearjar = require("swearjar");
 const { chat } = require("googleapis/build/src/apis/chat");
-const handleCommand =  require("./commands/commands")
-const rand = require("./utils/generateRandom")
+const handleCommand = require("./commands/commands");
+const rand = require("./utils/generateRandom");
 
 /** @typedef Message
  *  @property {string} kind
@@ -19,8 +19,8 @@ db.setFile("./db.json");
 const youtube = google.youtube("v3");
 const OAuth2 = google.auth.OAuth2;
 
-const SECOND = 1000
-const MINUTE = SECOND * 60
+const SECOND = 1000;
+const MINUTE = SECOND * 60;
 
 const clientId = config.CLIENT_ID;
 const clientSecret = config.CLIENT_SECRET;
@@ -161,7 +161,6 @@ const addCommand = async (command, response) => {
   return true;
 };
 
-
 /**
  *
  * @param {Message} messageObj
@@ -170,20 +169,19 @@ const addCommand = async (command, response) => {
 async function mod(messageObj) {
   const message = messageObj.snippet.displayMessage;
 
-
   if (containsBadWords(message)) {
-    console.log("Banned word used!")
+    console.log("Banned word used!");
     return await insertMessage(
       `@${messageObj.snippet.authorChannelId} That word is not allowed to use!`
     );
   }
 
   if (message.startsWith("!")) {
-    handleCommand(message)
+    handleCommand(message);
   }
 
   return;
-} 
+}
 
 async function startModServices() {
   console.log("starting mod services");
@@ -191,24 +189,30 @@ async function startModServices() {
 
   setInterval(() => {
     for (const message of chatMessages) {
-      if (db.get("latestMessage" == message)) continue // skip the below part if the message has already been checked. This prevents messages from being checked more than once.
+      if (db.get("latestMessage" == message)) continue; // skip the below part if the message has already been checked. This prevents messages from being checked more than once.
 
       mod(message);
       if (db.get("FirstMessage") == null) {
-        db.set("FirstMessage", message)
+        db.set("FirstMessage", message);
         db.set("latestMessage", message);
       } else {
         db.set("latestMessage", message);
       }
-      } 
+    }
   }, intervalTime + 100);
 }
 
 async function startPromoting() {
-  setTimeout(() => {
-    insertMessage(config.PROMOTIONAL_MESSAGE) 
-    const random = rand(1)
-  }, MINUTE * 3)  
+  setTimeout(async () => {
+    insertMessage(config.PROMOTIONAL_MESSAGE);
+    const msgLine = rand(1, 6);
+
+    const filePath = path.join(__dirname, "txt", "scheduled.txt");
+    const data = await fs.readFile(filePath, { encoding: "utf-8" }).split("\n");
+
+    await insertMessage(data[msgLine])
+    return true
+  }, MINUTE * 3);
 }
 
 checkTokens();
@@ -222,5 +226,5 @@ module.exports = {
   getToken,
   //ModServices,
   startModServices,
-  startPromoting
+  startPromoting,
 };
