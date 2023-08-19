@@ -5,6 +5,7 @@ const vidData = require("vid_data");
 const swearjar = require("swearjar");
 const { chat } = require("googleapis/build/src/apis/chat");
 const handleCommand =  require("./commands/commands")
+const rand = require("./utils/generateRandom")
 
 /** @typedef Message
  *  @property {string} kind
@@ -177,26 +178,29 @@ async function mod(messageObj) {
   if (message.startsWith("!")) {
     handleCommand(message)
   }
-  return; 
+
+  
+  return;
 } 
 
+setTimeout(() => {
+  
+}, 60000 * 3) // 1 minuite * 3 = 3 minutes yay
 
 async function startModServices() {
   console.log("starting mod services");
   db.set("uptime", Date.now());
- 
   setInterval(() => {
     for (const message of chatMessages) {
       if (db.get("latestMessage" == message)) continue // skip the below part if the message has already been checked. This prevents messages from being checked more than once.
 
-      mod(message);
+      mod(message, i);
       if (db.get("FirstMessage") == null) {
         db.set("FirstMessage", message)
         db.set("latestMessage", message);
       } else {
         db.set("latestMessage", message);
       }
-       
       } 
   }, intervalTime + 100);
 }
