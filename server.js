@@ -48,6 +48,20 @@ server.get("/startLivestream", (req, res) => {
   res.redirect("/main");
 });
 
+server.get("/startPromoting", (_req, res) => {
+  youtube.startPromoting()
+  res.redirect("/main")
+})
+
+server.get("/fullStart", async (req, res) => {
+  await youtube.startLivestream()
+  await youtube.findChat();
+  youtube.startChatTracking();
+  youtube.startModServices();
+
+  res.redirect("/main");
+});
+
 server.listen(4000, () =>
   console.log("server started on http://localhost:4000!")
 );

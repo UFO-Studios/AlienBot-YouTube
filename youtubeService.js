@@ -1,8 +1,9 @@
 const config = require("./config.json");
 const { google } = require("googleapis");
 const db = require("easy-db-json");
-const vidData = require("vid_data");
 const swearjar = require("swearjar");
+const handleCommand = require("./commands/commands");
+const rand = require("./utils/generateRandom");
 
 /** @typedef Message
  *  @property {string} kind
@@ -15,6 +16,9 @@ db.setFile("./db.json");
 
 const youtube = google.youtube("v3");
 const OAuth2 = google.auth.OAuth2;
+
+const SECOND = 1000;
+const MINUTE = SECOND * 60;
 
 const clientId = config.CLIENT_ID;
 const clientSecret = config.CLIENT_SECRET;
@@ -152,59 +156,7 @@ const containsBadWords = (message) => {
 
 const addCommand = async (command, response) => {
   await db.set(command, response);
-  await insertMessage(`Command ${command} added!`);
   return true;
-};
-
-const ModServices = async (res) => {
-  setInterval(async () => {
-    const { data } = res;
-
-    if (!messages[0]) messages = data.items;
-
-    messages = messages.map(async (e) => {
-      if (!e.checked) {
-        const { snippet } = e;
-        const { displayMessage, authorChannelId } = snippet;
-
-        const words = displayMessage.split(" ");
-
-        words.forEach(async (word) => {
-          if (bannedWords.includes(word) || isBadWord(word)) {
-            // word no longer looks like a word xD
-            console.log(`banned word used: ${word}`);
-
-            const channelName = vidData
-              .get_channel_id_and_name(
-                `https://youtube.com/channel/${authorChannelId}`
-              )
-              .then((data) => data.channel_name);
-
-            await insertMessage(
-              `@${channelName} That word is not allowed to use!`
-            );
-          }
-        });
-        if (displayMessage.startsWith("!")) {
-          const command = displayMessage.split(" ")[0].slice(1);
-          const response = db.get(command);
-          if (response) {
-            await insertMessage(response);
-          }
-          if (command === "addCommand") {
-            console.log("adding command");
-            const newCommand = displayMessage.split(" ")[1];
-            const newResponse = displayMessage.split(" ").slice(2).join(" ");
-            await addCommand(newCommand, newResponse);
-            await insertMessage("Command added!");
-          }
-
-          e.checked = true;
-          return e;
-        }
-      }
-    }, intervalTime);
-  });
 };
 
 /**
@@ -213,60 +165,37 @@ const ModServices = async (res) => {
  * @returns
  */
 async function mod(messageObj) {
-  // const MsgString = MsgToFunc.toString();
-  // const words = MsgString.split(" ");
-  // words.forEach(async (word) => {
-  //   if (bannedWords.includes(word) || isBadWord(word)) {
-  //     // word no longer looks like a word xD
-  //     console.log(`banned word used: ${word}`);
-
-  //     const channelName = vidData
-  //       .get_channel_id_and_name(
-  //         `https://youtube.com/channel/${authorChannelId}`
-  //       )
-  //       .then((data) => data.channel_name);
-
-  //     await insertMessage(`@${channelName} That word is not allowed to use!`);
-  //   }
-  // });
   const message = messageObj.snippet.displayMessage;
+
   if (containsBadWords(message)) {
-    return await await insertMessage(
+    console.log("Banned word used!");
+    return await insertMessage(
       `@${messageObj.snippet.authorChannelId} That word is not allowed to use!`
     );
   }
 
   if (message.startsWith("!")) {
-    const fragments = message.split(" ");
-    const command = fragments[0].slice(1);
-
-    switch (command) {
-      case "addCommand":
-        console.log("adding command");
-        const newCommand = fragments[1];
-        const newResponse = fragments[2];
-
-        console.log(`${newCommand}: ${newResponse}`);
-
-        await addCommand(newCommand, newResponse);
-        await insertMessage(
-          `@${messageObj.snippet.authorChannelId} Command added!`
-        );
-        return;
-    }
-
-    const response = db.get(command);
-    if (response) {
-      await insertMessage(response);
-    }
+    handleCommand(message);
   }
+
   return;
 }
 
 async function startModServices() {
+  console.log("starting mod services");
+  db.set("uptime", Date.now());
+
   setInterval(() => {
     for (const message of chatMessages) {
+      if (db.get("latestMessage" == message)) continue; // skip the below part if the message has already been checked. This prevents messages from being checked more than once.
+
       mod(message);
+      if (db.get("FirstMessage") == null) {
+        db.set("FirstMessage", message);
+        db.set("latestMessage", message);
+      } else {
+        db.set("latestMessage", message);
+      }
     }
   }, intervalTime + 100);
 }
@@ -287,6 +216,18 @@ async function startLivestream(title, description, privacyStatus) {
     },
   });
 }
+async function startPromoting() {
+  setTimeout(async () => {
+    insertMessage(config.PROMOTIONAL_MESSAGE);
+    const msgLine = rand(1, 6);
+
+    const filePath = path.join(__dirname, "txt", "scheduled.txt");
+    const data = await fs.readFile(filePath, { encoding: "utf-8" }).split("\n");
+
+    await insertMessage(data[msgLine])
+    return true
+  }, MINUTE * 3);
+}
 
 checkTokens();
 
@@ -297,7 +238,8 @@ module.exports = {
   stopChatTracking,
   findChat,
   getToken,
-  ModServices,
+  //ModServices,
   startModServices,
   startLivestream,
+  startPromoting,
 };
