@@ -18,7 +18,7 @@ async function handleCommand(message, channelId) {
       console.log(`${newCommand}: ${newResponse}`);
 
       await addCommand(newCommand, newResponse);
-      const author = getChannelName(channelId);
+      const author = await getChannelName(channelId);
       await insertMessage(`@${author} Command added!`);
       break;
     case "uptime":

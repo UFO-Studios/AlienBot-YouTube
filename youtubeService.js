@@ -160,7 +160,7 @@ async function mod(messageObj) {
   const message = messageObj.snippet.displayMessage;
 
   if (containsBadWords(message)) {
-    const author = getChannelName(messageObj.snippet.authorChannelId);
+    const author = await getChannelName(messageObj.snippet.authorChannelId);
     return await insertMessage(`@${author} That word is not allowed to use!`);
   }
 
