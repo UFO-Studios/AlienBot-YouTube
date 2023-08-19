@@ -3,7 +3,6 @@ const { google } = require("googleapis");
 const db = require("easy-db-json");
 const vidData = require("vid_data");
 const swearjar = require("swearjar");
-const { chat } = require("googleapis/build/src/apis/chat");
 
 /** @typedef Message
  *  @property {string} kind
@@ -32,10 +31,10 @@ let liveChatId;
 let nextPage;
 const intervalTime = config.INTERVAL_TIME || 5000;
 let interval;
-const bannedWords = [
-  "word", // you thought i was gonna type in real banned words ;)
-  "hehe",
-];
+// const bannedWords = [
+//   "word", // you thought i was gonna type in real banned words ;)
+//   "hehe",
+// ];
 /**
  * @type {Message[]}
  */
@@ -47,12 +46,12 @@ const auth = new OAuth2(clientId, clientSecret, redirectURI);
 auth.on("tokens", (tokens) => db.set("tokens", tokens));
 
 const getCode = (res) => {
-  const authUrl = auth.generateAuthUrl({
-    access_type: "offline",
-    scope,
-  });
-  //console.log("auth url:"+authUrl);
-  res.redirect(authUrl);
+  res.redirect(
+    auth.generateAuthUrl({
+      access_type: "offline",
+      scope,
+    })
+  );
 };
 
 const setAuth = ({ tokens }) => {
@@ -272,6 +271,23 @@ async function startModServices() {
   }, intervalTime + 100);
 }
 
+async function startLivestream(title, description, privacyStatus) {
+  const stream = await youtube.liveBroadcasts.insert({
+    auth,
+    requestBody: {
+      snippet: {
+        title,
+        description,
+        actualStartTime: Date.now(),
+      },
+      status: {
+        privacyStatus,
+        madeForKids: false,
+      },
+    },
+  });
+}
+
 checkTokens();
 
 module.exports = {
@@ -283,4 +299,5 @@ module.exports = {
   getToken,
   ModServices,
   startModServices,
+  startLivestream,
 };

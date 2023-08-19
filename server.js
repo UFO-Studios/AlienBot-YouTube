@@ -1,29 +1,17 @@
 const express = require("express");
 const path = require("node:path");
 const youtube = require("./youtubeService");
-//const isLoggedIn = require("./utils/isLoggedIn.js");
-const db = require("./db.json");
+const isLoggedIn = require("./utils/isLoggedIn.js");
 
 const server = express();
 
-async function isLoggedIn() {
-  if (!db.tokens) {
-    return "/auth";
-  } else {
-    return "/main";
-  }
-}
+server.get("/", async (_req, res) => res.redirect(await isLoggedIn()));
 
-server.get(
-  "/",
-   async (req, res) =>  res.redirect(await isLoggedIn())
-);
-
-server.get("/main", (req, res) => {
+server.get("/main", (_req, res) => {
   res.sendFile(path.join(__dirname, "/main.html"));
 });
 
-server.get("/auth", (req, res) => {
+server.get("/auth", (_req, res) => {
   youtube.getCode(res);
 });
 
@@ -34,12 +22,12 @@ server.get("/callback", (req, res) => {
   res.redirect("/main");
 });
 
-server.get("/findChat", (req, res) => {
+server.get("/findChat", (_req, res) => {
   youtube.findChat();
   res.redirect("/main");
 });
 
-server.get("/startChatTracking", (req, res) => {
+server.get("/startChatTracking", (_req, res) => {
   youtube.startChatTracking();
   res.redirect("/main");
 });
@@ -49,8 +37,14 @@ server.get("/insertMessage", (req, res) => {
   res.redirect("/main");
 });
 
-server.get("/startModServices", (req, res) => {
+server.get("/startModServices", (_req, res) => {
   youtube.startModServices();
+  res.redirect("/main");
+});
+
+server.get("/startLivestream", (req, res) => {
+  const { title, description, privacyStatus } = req.query;
+  youtube.startLivestream(title, description, privacyStatus);
   res.redirect("/main");
 });
 
