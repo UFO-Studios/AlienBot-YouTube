@@ -24,8 +24,13 @@ server.get("/callback", function (req, res) {
   res.redirect("/main");
 });
 
-server.get("/findChat", function (_req, res) {
-  youtube.findChat();
+server.get("/findChat", (_req, res) => {
+  try {
+    youtube.findChat();
+  } catch (e) {
+    console.error("Errors: " + e.errors.join(", "));
+  }
+
   res.redirect("/main");
 });
 
@@ -49,7 +54,7 @@ server.get("/startPromoting", function (_req, res) {
   res.redirect("/main");
 });
 
-server.get("/fullStart", async function (req, res) {
+server.get("/fullStart", async function (_req, res) {
   try {
     await youtube.findChat();
     youtube.startChatTracking();

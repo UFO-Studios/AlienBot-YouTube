@@ -180,7 +180,7 @@ async function startModServices() {
       }
 
       mod(message);
-      
+
       if (db.get("FirstMessage") == null) {
         db.set("FirstMessage", message);
       } else {
