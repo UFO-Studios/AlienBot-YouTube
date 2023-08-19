@@ -60,7 +60,7 @@ server.get("/fullStart", async function (_req, res) {
     youtube.startChatTracking();
     youtube.startModServices();
   } catch (e) {
-    console.error(e.errors[0].message);
+    console.error(e);
   }
 
   res.redirect("/main");
