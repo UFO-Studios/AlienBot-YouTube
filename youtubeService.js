@@ -4,6 +4,7 @@ const db = require("easy-db-json");
 const vidData = require("vid_data");
 const swearjar = require("swearjar");
 const { chat } = require("googleapis/build/src/apis/chat");
+const handleCommand =  require("./commands/commands")
 
 /** @typedef Message
  *  @property {string} kind
@@ -153,60 +154,9 @@ const containsBadWords = (message) => {
 
 const addCommand = async (command, response) => {
   await db.set(command, response);
-  //await insertMessage(`Command ${command} added!`);
   return true;
 };
 
-const ModServices = async (res) => {
-  setInterval(async () => {
-    const { data } = res;
-
-    if (!messages[0]) messages = data.items;
-
-    messages = messages.map(async (e) => {
-      if (!e.checked) {
-        const { snippet } = e;
-        const { displayMessage, authorChannelId } = snippet;
-
-        const words = displayMessage.split(" ");
-
-        words.forEach(async (word) => {
-          if (bannedWords.includes(word) || isBadWord(word)) {
-            // word no longer looks like a word xD
-            console.log(`banned word used: ${word}`);
-
-            const channelName = vidData
-              .get_channel_id_and_name(
-                `https://youtube.com/channel/${authorChannelId}`
-              )
-              .then((data) => data.channel_name);
-
-            await insertMessage(
-              `@${channelName} That word is not allowed to use!`
-            );
-          }
-        });
-        if (displayMessage.startsWith("!")) {
-          const command = displayMessage.split(" ")[0].slice(1);
-          const response = db.get(command);
-          if (response) {
-            await insertMessage(response);
-          }
-          if (command === "addCommand") {
-            console.log("adding command");
-            const newCommand = displayMessage.split(" ")[1];
-            const newResponse = displayMessage.split(" ").slice(2).join(" ");
-            await addCommand(newCommand, newResponse);
-            await insertMessage("Command added!");
-          }
-
-          e.checked = true;
-          return e;
-        }
-      }
-    }, intervalTime);
-  });
-};
 
 /**
  *
@@ -225,28 +175,7 @@ async function mod(messageObj) {
   }
 
   if (message.startsWith("!")) {
-    const fragments = message.split(" ");
-    const command = fragments[0].slice(1);
-
-    switch (command) {
-      case "addCommand":
-        console.log("adding command");
-        const newCommand = fragments[1];
-        const newResponse = fragments[2];
-
-        console.log(`${newCommand}: ${newResponse}`);
-
-        await addCommand(newCommand, newResponse);
-        await insertMessage(
-          `@${messageObj.snippet.authorChannelId} Command added!`
-        );
-        return;
-    }
-
-    const response = db.get(command);
-    if (response) {
-      await insertMessage(response);
-    }
+    handleCommand(message)
   }
   return; 
 } 
@@ -255,12 +184,19 @@ async function mod(messageObj) {
 async function startModServices() {
   console.log("starting mod services");
   db.set("uptime", Date.now());
+ 
   setInterval(() => {
     for (const message of chatMessages) {
       if (db.get("latestMessage" == message)) continue // skip the below part if the message has already been checked. This prevents messages from being checked more than once.
 
       mod(message);
-      db.set("latestMessage", message);  //fixed xD oh damn thi is big brain but the previous one wouldve also worked cause objects are pointers like in C, just remembered that, so I think that wouldve also worked, but im not sure
+      if (db.get("FirstMessage") == null) {
+        db.set("FirstMessage", message)
+        db.set("latestMessage", message);
+      } else {
+        db.set("latestMessage", message);
+      }
+       
       } 
   }, intervalTime + 100);
 }
@@ -274,6 +210,6 @@ module.exports = {
   stopChatTracking,
   findChat,
   getToken,
-  ModServices,
+  //ModServices,
   startModServices,
 };
