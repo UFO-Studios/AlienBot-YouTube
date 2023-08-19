@@ -18,8 +18,13 @@ async function handleCommand(message, channelId) {
       console.log(`${newCommand}: ${newResponse}`);
 
       await addCommand(newCommand, newResponse);
-      const author = await getChannelName(channelId);
-      await insertMessage(`@${author} Command added!`);
+      const { data } = await youtube.channels.list({
+        part: "snippet",
+        id: channelId,
+        auth,
+      });
+      
+      await insertMessage(`@${data.items[0].snippet.customUrl} Command added!`);
       break;
     case "uptime":
       uptime();

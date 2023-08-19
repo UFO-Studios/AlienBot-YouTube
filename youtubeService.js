@@ -21,6 +21,8 @@ const OAuth2 = google.auth.OAuth2;
 const SECOND = 1000;
 const MINUTE = SECOND * 60;
 
+const sigIntMessage = "AlienBot-YT turned off!";
+
 const clientId = config.CLIENT_ID;
 const clientSecret = config.CLIENT_SECRET;
 const redirectURI = config.CALLBACK_DOMAIN + "/callback";
@@ -169,8 +171,15 @@ async function mod(messageObj) {
   const message = messageObj.snippet.displayMessage;
 
   if (containsBadWords(message)) {
-    const author = await getChannelName(messageObj.snippet.authorChannelId);
-    return await insertMessage(`@${author} That word is not allowed to use!`);
+    const { data } = await youtube.channels.list({
+      part: "snippet",
+      id: messageObj.snippet.authorChannelId,
+      auth,
+    });
+
+    return await insertMessage(
+      `@${data.items[0].snippet.customUrl} That word is not allowed to use!`
+    );
   }
 
   if (message.startsWith("!")) {
@@ -215,8 +224,15 @@ checkTokens();
 
 process.on("SIGINT", function () {
   // i forgot what i was going to do :sweat_smile:
+  if (liveChatId) insertMessage(sigIntMessage);
   process.exit();
 });
+
+/**
+ *
+ * @param {string} id
+ */
+async function getChannelTag(id) {}
 
 module.exports = {
   getCode,
