@@ -1,9 +1,10 @@
 const config = require("./config.json");
 const { google } = require("googleapis");
 const db = require("easy-db-json");
-const containsBadWords = require("../utils/containsBadWords.js");
+const containsBadWords = require("./utils/containsBadWords.js");
 const handleCommand = require("./commands/commands.js");
 const rand = require("./utils/generateRandom.js");
+const getChannelName = require("./utils/getChannelName");
 
 /** @typedef Message
  *  @property {string} kind
@@ -159,14 +160,12 @@ async function mod(messageObj) {
   const message = messageObj.snippet.displayMessage;
 
   if (containsBadWords(message)) {
-    console.log("Banned word used!");
-    return await insertMessage(
-      `@${messageObj.snippet.authorChannelId} That word is not allowed to use!`
-    );
+    const author = getChannelName(messageObj.snippet.authorChannelId);
+    return await insertMessage(`@${author} That word is not allowed to use!`);
   }
 
   if (message.startsWith("!")) {
-    handleCommand(message);
+    handleCommand(message, messageObj.snippet.authorChannelId);
   }
 
   return;

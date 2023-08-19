@@ -1,10 +1,11 @@
+const getChannelName = require("../utils/getChannelName");
 const quote = require("./quote");
 const uptime = require("./uptime");
 
 /**
  * @param {string} message
  */
-async function handleCommand(message) {
+async function handleCommand(message, channelId) {
   const fragments = message.split(" ");
   const command = fragments[0];
 
@@ -17,7 +18,8 @@ async function handleCommand(message) {
       console.log(`${newCommand}: ${newResponse}`);
 
       await addCommand(newCommand, newResponse);
-      await insertMessage(`Command added!`);
+      const author = getChannelName(channelId);
+      await insertMessage(`@${author} Command added!`);
       break;
     case "uptime":
       uptime();

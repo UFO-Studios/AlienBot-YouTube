@@ -1,5 +1,5 @@
 const db = require("easy-db-json");
-const { insertMessage } = require("../youtubeService");
+const youtube = require("../youtubeService");
 
 db.setFile("../db.json");
 
@@ -8,7 +8,7 @@ async function getUptime() {
   const now = Date.now();
   const timeRunning = new Date(now - startTime);
 
-  await insertMessage(
+  await youtube.insertMessage(
     `The stream has been running for ${timeRunning.getHours()} hours, ${timeRunning.getMinutes()} minutes and ${timeRunning.getSeconds()} seconds!`
   );
 }
