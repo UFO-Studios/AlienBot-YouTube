@@ -185,7 +185,6 @@ async function mod(messageObj) {
   if (message.startsWith("!")) {
     handleCommand(message, messageObj.snippet.authorChannelId);
   }
-
   return;
 }
 
