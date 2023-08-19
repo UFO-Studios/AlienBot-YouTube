@@ -213,6 +213,11 @@ async function startPromoting() {
 
 checkTokens();
 
+process.on("SIGINT", function () {
+  // i forgot what i was going to do :sweat_smile:
+  process.exit();
+});
+
 module.exports = {
   getCode,
   insertMessage,
