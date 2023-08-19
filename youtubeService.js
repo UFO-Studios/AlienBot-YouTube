@@ -58,7 +58,7 @@ async function getCode(res) {
 }
 
 async function setAuth({ tokens }) {
-  auth.setCredentials(tokens);
+  auth.setCredentials({ access_token: tokens });
   console.log("successfully set credentials.");
   console.log(tokens);
   db.set("tokens", tokens);
@@ -140,13 +140,11 @@ async function startChatTracking() {
     getChatMessages();
   }, intervalTime);
 }
-
-async function checkTokens() {
   const tokens = await db.get("tokens");
 
   if (tokens) {
     console.log("tokens found");
-    return auth.setCredentials(tokens);
+    return auth.setCredentials({ access_token: tokens });
   }
   console.log("no auth tokens found.");
 }
