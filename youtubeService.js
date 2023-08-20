@@ -41,7 +41,7 @@ const scope = [
 
 let liveChatId;
 let nextPage;
-let interval;
+let interval = [];
 
 /**
  * @type {Message[]}
@@ -116,7 +116,7 @@ async function insertMessage(messageText) {
 }
 
 async function stopChatTracking() {
-  clearInterval(interval);
+  interval.forEach((i) => clearInterval(i));
 }
 
 async function getChatMessages() {
@@ -148,7 +148,7 @@ async function startChatTracking() {
     );
   }
 
-  interval = setInterval(function () {
+  interval[0] = setInterval(function () {
     getChatMessages();
   }, intervalTime);
 }
@@ -199,7 +199,7 @@ async function mod(messageObj) {
 }
 
 async function startModServices() {
-  setInterval(function () {
+  interval[1] = setInterval(function () {
     for (const message of chatMessages) {
       if (message.checked) continue;
 
@@ -210,16 +210,15 @@ async function startModServices() {
 }
 
 async function startPromoting() {
-  setTimeout(async function () {
+  const filePath = path.join(__dirname, "txt", "scheduled.txt");
+
+  const data = await fs
+    .readFile(filePath, { encoding: "utf-8" })
+    .then((d) => d.toString().split("\n"));
+
+  interval[2] = setInterval(async function () {
     const msgLine = rand(0, 6);
-
-    const filePath = path.join(__dirname, "txt", "scheduled.txt");
-    const data = await fs
-      .readFile(filePath, { encoding: "utf-8" })
-      .then((d) => d.toString().split("\n"));
-
     await insertMessage(data[msgLine]);
-    return true;
   }, MINUTE * 2);
 }
 
