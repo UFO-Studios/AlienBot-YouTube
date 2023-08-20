@@ -1,6 +1,7 @@
-const quote = require("./quote");
-const uptime = require("./uptime");
+const quote = require("./quote.js");
+const uptime = require("./uptime.js");
 const db = require("easy-db-json");
+const about = require("./about.js");
 
 db.setFile("../db.json");
 
@@ -76,6 +77,10 @@ async function handleCommand(message, channelId, msg, yt, chatMessages, auth) {
         `${data1.items[0].snippet.customUrl} The first person in chat is: ${data2.items[0].snippet.customUrl}!`
       );
 
+      break;
+    case "about":
+    case "at":
+      about(msg);
       break;
     default: // custom cmds
       const response = db.get(command);

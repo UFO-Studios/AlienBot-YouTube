@@ -68,6 +68,11 @@ server.get("/fullStart", async function (_req, res) {
   res.redirect("/");
 });
 
+server.get("/stopChatTracking", (_req, res) => {
+  youtube.stopChatTracking();
+  res.redirect("/");
+});
+
 server.listen(4000, function () {
   console.log("server started on http://localhost:4000!");
 });
