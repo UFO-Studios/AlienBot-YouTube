@@ -78,7 +78,7 @@ async function getToken(code) {
 async function findChat() {
   if (liveChatId) return console.info("AlienBot has already found your chat!");
 
-  db.set("uptime", Date.now());
+  db.set("uptime", new Date().valueOf());
 
   try {
     const res = await youtube.liveBroadcasts.list({
@@ -95,7 +95,7 @@ async function findChat() {
     liveChatId = latestChat.snippet.liveChatId;
     console.log(`live chat id found: ${liveChatId}`);
   } catch (error) {
-    console.log("Errors are: " + error.errors.join(", "));
+    console.log("Errors are: " + error);
   }
 }
 
@@ -137,7 +137,7 @@ async function getChatMessages() {
 
     console.log(`total new messages: ${newMessages.length}`);
   } catch (e) {
-    console.error(e.errors.join(", "));
+    console.error(e);
   }
 }
 
@@ -186,7 +186,14 @@ async function mod(messageObj) {
   }
 
   if (message.startsWith("!")) {
-    handleCommand(message, messageObj.snippet.authorChannelId, chatMessages);
+    handleCommand(
+      message.slice(1),
+      messageObj.snippet.authorChannelId,
+      insertMessage,
+      youtube,
+      chatMessages,
+      auth
+    );
   }
   return;
 }

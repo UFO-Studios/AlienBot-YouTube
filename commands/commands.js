@@ -1,4 +1,3 @@
-const youtube = require("../youtubeService");
 const quote = require("./quote");
 const uptime = require("./uptime");
 const db = require("easy-db-json");
@@ -8,14 +7,12 @@ db.setFile("../db.json");
 /**
  * @param {string} message
  */
-async function handleCommand(message, channelId, yt, chatMessages) {
-  console.log(message);
+async function handleCommand(message, channelId, msg, yt, chatMessages, auth) {
   const fragments = message.split(" ");
   const command = fragments[0];
 
   switch (command.toLowerCase()) {
-    case "addcommand":
-      console.log("adding command");
+    case "addcommand" || "ac":
       const newCommand = fragments[1];
       const newResponse = fragments[2];
 
@@ -28,15 +25,41 @@ async function handleCommand(message, channelId, yt, chatMessages) {
         auth,
       });
 
-      await insertMessage(`${data.items[0].snippet.customUrl} Command added!`);
+      await msg(`${data.items[0].snippet.customUrl} Command added!`);
       break;
     case "uptime":
-      uptime();
+    case "ut":
+      uptime(msg);
+      break;
+    case "streamuptime":
+    case "sut":
+      const { data: datayt } = await yt.liveBroadcasts.list({
+        part: "snippet",
+        auth,
+        mine: true,
+      });
+
+      const { snippet } = datayt.items[0];
+
+      const timeStarting = new Date(snippet.actualStartTime).valueOf();
+      const rn = new Date().valueOf();
+
+      const milliseconds = rn - timeStarting; // in milliseconds
+      const seconds = Math.floor(milliseconds / 1000); // in seconds
+      const minutes = Math.floor(seconds / 60); // in minutes
+      const hours = Math.floor(seconds / 3600); // in hours
+
+      await msg(
+        `The stream has been up since ${hours} hours, ${minutes} minutes and ${seconds} seconds. (Thats ${milliseconds} in milliseconds!)`
+      );
+
       break;
     case "quote":
-      quote();
+    case "qt":
+      quote(msg);
       break;
     case "whoisfirst":
+    case "wif":
       const { data: data1 } = await yt.channels.list({
         part: "snippet",
         id: channelId,
@@ -49,16 +72,16 @@ async function handleCommand(message, channelId, yt, chatMessages) {
         auth,
       });
 
-      await youtube.insertMessage(
+      await msg(
         `${data1.items[0].snippet.customUrl} The first person in chat is: ${data2.items[0].snippet.customUrl}!`
       );
 
       break;
-    default:
+    default: // custom cmds
       const response = db.get(command);
 
       if (response) {
-        await youtube.insertMessage(response);
+        await msg(response);
       }
       break;
   }

@@ -5,12 +5,13 @@ const isLoggedIn = require("./utils/isLoggedIn.js");
 
 const server = express();
 
-server.get("/", async function (_req, res) {
-  res.redirect(isLoggedIn());
+server.use(function (req, res, next) {
+  if (req.path != "/auth" && !isLoggedIn()) res.redirect("/auth");
+  next();
 });
 
-server.get("/main", function (_req, res) {
-  res.sendFile(path.join(__dirname, "/main.html"));
+server.get("/", function (_req, res) {
+  res.sendFile(path.join(__dirname, "/index.html"));
 });
 
 server.get("/auth", function (_req, res) {
@@ -21,7 +22,7 @@ server.get("/callback", function (req, res) {
   const code = req.query;
   youtube.getToken(code);
 
-  res.redirect("/main");
+  res.redirect("/");
 });
 
 server.get("/findChat", async (_req, res) => {
