@@ -32,27 +32,27 @@ server.get("/findChat", async (_req, res) => {
     console.error("Errors: " + e.errors.join(", "));
   }
 
-  res.redirect("/main");
+  res.redirect("/");
 });
 
 server.get("/startChatTracking", function (_req, res) {
   youtube.startChatTracking();
-  res.redirect("/main");
+  res.redirect("/");
 });
 
 server.get("/insertMessage", function (req, res) {
   youtube.insertMessage(req.query.message);
-  res.redirect("/main");
+  res.redirect("/");
 });
 
 server.get("/startModServices", function (_req, res) {
   youtube.startModServices();
-  res.redirect("/main");
+  res.redirect("/");
 });
 
 server.get("/startPromoting", function (_req, res) {
   youtube.startPromoting();
-  res.redirect("/main");
+  res.redirect("/");
 });
 
 server.get("/fullStart", async function (_req, res) {
@@ -65,7 +65,7 @@ server.get("/fullStart", async function (_req, res) {
     console.error(e);
   }
 
-  res.redirect("/main");
+  res.redirect("/");
 });
 
 server.listen(4000, function () {
