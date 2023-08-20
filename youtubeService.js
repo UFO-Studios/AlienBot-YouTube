@@ -228,14 +228,9 @@ checkTokens();
 process.on("SIGINT", function () {
   // i forgot what i was going to do here :sweat_smile:
   if (liveChatId) insertMessage(sigIntMessage);
+  // maybe clear memory? thats what i would do in C but idk lin nodejs lmao
   process.exit();
 });
-
-/**
- *
- * @param {string} id
- */
-async function getChannelTag(id) {}
 
 module.exports = {
   getCode,
