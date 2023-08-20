@@ -1,10 +1,14 @@
 const config = require("./config.json");
-const { google } = require("googleapis");
-const db = require("easy-db-json");
+
 const containsBadWords = require("./utils/containsBadWords.js");
 const handleCommand = require("./commands/commands.js");
 const rand = require("./utils/generateRandom.js");
-const getChannelName = require("./utils/getChannelName");
+
+const { google } = require("googleapis");
+const db = require("easy-db-json");
+
+const path = require("node:path");
+const fs = require("node:fs/promises");
 
 /** @typedef Message
  *  @property {string} kind
@@ -26,6 +30,7 @@ const sigIntMessage = "AlienBot-YT turned off!";
 const clientId = config.CLIENT_ID;
 const clientSecret = config.CLIENT_SECRET;
 const redirectURI = config.CALLBACK_DOMAIN + "/callback";
+const intervalTime = config.INTERVAL_TIME || SECOND * 1.5; // every 1.5 seconds
 
 const scope = [
   "https://www.googleapis.com/auth/youtube.readonly",
@@ -36,7 +41,6 @@ const scope = [
 
 let liveChatId;
 let nextPage;
-const intervalTime = config.INTERVAL_TIME || 5000;
 let interval;
 
 /**
@@ -55,15 +59,13 @@ async function getCode(res) {
     auth.generateAuthUrl({
       access_type: "offline",
       scope,
+      prompt: "consent",
     })
   );
 }
 
 async function setAuth({ tokens }) {
   auth.setCredentials(tokens);
-  setTimeout(function () {
-    auth.refreshAccessToken();
-  }, tokens.expiry_date - Date.now());
   console.log("successfully set credentials.");
   db.set("tokens", tokens);
 }
@@ -74,6 +76,8 @@ async function getToken(code) {
 }
 
 async function findChat() {
+  if (liveChatId) return console.info("AlienBot has already found your chat!");
+
   db.set("uptime", Date.now());
 
   try {
@@ -116,21 +120,25 @@ async function stopChatTracking() {
 }
 
 async function getChatMessages() {
-  const res = await youtube.liveChatMessages.list({
-    auth,
-    part: ["snippet"],
-    liveChatId,
-    pageToken: nextPage,
-  });
+  try {
+    const res = await youtube.liveChatMessages.list({
+      auth,
+      part: ["snippet"],
+      liveChatId,
+      pageToken: nextPage,
+    });
 
-  const { data } = res;
-  const newMessages = data.items;
+    const { data } = res;
+    const newMessages = data.items;
 
-  chatMessages = newMessages;
+    chatMessages = newMessages;
 
-  nextPage = data.nextPageToken;
+    nextPage = data.nextPageToken;
 
-  console.log(`total new messages: ${newMessages.length}`);
+    console.log(`total new messages: ${newMessages.length}`);
+  } catch (e) {
+    console.error(e.errors.join(", "));
+  }
 }
 
 async function startChatTracking() {
@@ -151,11 +159,6 @@ async function checkTokens() {
   if (tokens) {
     console.log("Found tokens!");
     auth.setCredentials(tokens);
-
-    if (Date.now() > tokens.expiry_date) {
-      auth.refreshAccessToken();
-    }
-
     return;
   }
   console.log("no auth tokens found.");
@@ -178,12 +181,12 @@ async function mod(messageObj) {
     });
 
     return await insertMessage(
-      `@${data.items[0].snippet.customUrl} That word is not allowed to use!`
+      `${data.items[0].snippet.customUrl} That word is not allowed to use!`
     );
   }
 
   if (message.startsWith("!")) {
-    handleCommand(message, messageObj.snippet.authorChannelId);
+    handleCommand(message, messageObj.snippet.authorChannelId, chatMessages);
   }
   return;
 }
@@ -191,38 +194,32 @@ async function mod(messageObj) {
 async function startModServices() {
   setInterval(function () {
     for (const message of chatMessages) {
-      if (db.get("latestMessage" == message)) {
-        continue;
-      }
+      if (message.checked) continue;
 
       mod(message);
-
-      if (db.get("FirstMessage") == null) {
-        db.set("FirstMessage", message);
-      } else {
-        db.set("latestMessage", message);
-      }
+      message.checked = true;
     }
   }, intervalTime + 100);
 }
 
 async function startPromoting() {
   setTimeout(async function () {
-    insertMessage(config.PROMOTIONAL_MESSAGE);
-    const msgLine = rand(1, 6);
+    const msgLine = rand(0, 6);
 
     const filePath = path.join(__dirname, "txt", "scheduled.txt");
-    const data = await fs.readFile(filePath, { encoding: "utf-8" }).split("\n");
+    const data = await fs
+      .readFile(filePath, { encoding: "utf-8" })
+      .then((d) => d.toString().split("\n"));
 
     await insertMessage(data[msgLine]);
     return true;
-  }, MINUTE * 3);
+  }, MINUTE * 2);
 }
 
 checkTokens();
 
 process.on("SIGINT", function () {
-  // i forgot what i was going to do :sweat_smile:
+  // i forgot what i was going to do here :sweat_smile:
   if (liveChatId) insertMessage(sigIntMessage);
   process.exit();
 });
