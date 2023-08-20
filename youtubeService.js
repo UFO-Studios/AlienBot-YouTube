@@ -1,7 +1,7 @@
 const config = require("./config.json");
 
 const containsBadWords = require("./utils/containsBadWords.js");
-const handleCommand = require("./commands/commands.js");
+const handleCommand = require("./commands/handleCommand.js");
 const rand = require("./utils/generateRandom.js");
 
 const { google } = require("googleapis");
